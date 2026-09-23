@@ -67,7 +67,7 @@ func handleReportDelay(e *core.RequestEvent) error {
 	if reason == "" {
 		reason = "ohne Angabe"
 	}
-	reason = kuerzen(reason, 200)
+	reason = Kuerzen(reason, 200)
 
 	now := time.Now()
 	atTarget := game.AtTarget(e.App, mission, me, cfg)

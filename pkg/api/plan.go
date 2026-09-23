@@ -94,7 +94,7 @@ func handlePlanPrompt(e *core.RequestEvent) error {
 	if city == "" {
 		city = "eurer Stadt"
 	}
-	return e.JSON(http.StatusOK, map[string]any{"prompt": planPrompt(kuerzen(city, 80))})
+	return e.JSON(http.StatusOK, map[string]any{"prompt": planPrompt(Kuerzen(city, 80))})
 }
 
 type planRequest struct {
@@ -161,7 +161,7 @@ func parsePlan(text string) (*plan, error) {
 				"dann hilft es, die KI um den Rest zu bitten.", err)
 	}
 
-	out := &plan{City: kuerzen(strings.TrimSpace(raw.City), 80)}
+	out := &plan{City: Kuerzen(strings.TrimSpace(raw.City), 80)}
 
 	if len(raw.Sectors) > maxPlanSectors {
 		out.warn("Mehr als %d Sektoren – die übrigen wurden weggelassen.", maxPlanSectors)
@@ -183,7 +183,7 @@ func parsePlan(text string) (*plan, error) {
 	haveBounds := false
 
 	for _, s := range raw.Sectors {
-		name := kuerzen(strings.TrimSpace(s.Name), 120)
+		name := Kuerzen(strings.TrimSpace(s.Name), 120)
 		if name == "" {
 			name = "Sektor ohne Namen"
 		}
@@ -214,7 +214,7 @@ func parsePlan(text string) (*plan, error) {
 
 	// Hotspots.
 	for _, h := range raw.Hotspots {
-		name := kuerzen(strings.TrimSpace(h.Name), 120)
+		name := Kuerzen(strings.TrimSpace(h.Name), 120)
 		if name == "" {
 			out.warn("Ein Hotspot ohne Namen wurde weggelassen.")
 			continue
@@ -233,7 +233,7 @@ func parsePlan(text string) (*plan, error) {
 			Lat:   h.Lat,
 			Lng:   h.Lng,
 			Kind:  planKind(h.Kind),
-			Notes: kuerzen(strings.TrimSpace(h.Task), 2000),
+			Notes: Kuerzen(strings.TrimSpace(h.Task), 2000),
 		})
 	}
 
@@ -248,10 +248,10 @@ func parsePlan(text string) (*plan, error) {
 
 	// Rätsel.
 	for i, p := range raw.Puzzles {
-		p.Title = kuerzen(strings.TrimSpace(p.Title), 120)
-		p.Question = kuerzen(strings.TrimSpace(p.Question), 2000)
-		p.Answer = kuerzen(strings.TrimSpace(p.Answer), 500)
-		p.Hint = kuerzen(strings.TrimSpace(p.Hint), 500)
+		p.Title = Kuerzen(strings.TrimSpace(p.Title), 120)
+		p.Question = Kuerzen(strings.TrimSpace(p.Question), 2000)
+		p.Answer = Kuerzen(strings.TrimSpace(p.Answer), 500)
+		p.Hint = Kuerzen(strings.TrimSpace(p.Hint), 500)
 		p.Type = strings.ToUpper(strings.TrimSpace(p.Type))
 		p.Category = strings.ToLower(strings.TrimSpace(p.Category))
 

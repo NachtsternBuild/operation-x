@@ -101,7 +101,7 @@ func handleSetStatus(e *core.RequestEvent) error {
 	// Beim Pausieren den Zeitpunkt festhalten – gleich wird er gebraucht.
 	if req.Status == schema.GamePaused && previous != schema.GamePaused {
 		gameRec.Set("paused_at", now)
-		gameRec.Set("pause_reason", kuerzen(strings.TrimSpace(req.Reason), 120))
+		gameRec.Set("pause_reason", Kuerzen(strings.TrimSpace(req.Reason), 120))
 
 		// Die geplante Dauer ist eine Ansage, keine Schaltuhr: Das Spiel läuft
 		// nicht von selbst wieder an. Wer zwanzig Minuten später noch beim

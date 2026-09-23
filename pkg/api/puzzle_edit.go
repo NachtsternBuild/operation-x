@@ -198,11 +198,11 @@ func validatePuzzle(req *puzzleWrite) error {
 	// Obergrenzen, damit ein verrutschtes Einfügen aus der Zwischenablage nicht
 	// ein Megabyte in die Datenbank schreibt. Großzügig genug für jedes Rätsel,
 	// das jemand von Hand schreibt.
-	req.Code = kuerzen(req.Code, 12)
-	req.Title = kuerzen(req.Title, 120)
-	req.Question = kuerzen(req.Question, 2000)
-	req.Answer = kuerzen(req.Answer, 500)
-	req.Hint = kuerzen(req.Hint, 500)
+	req.Code = Kuerzen(req.Code, 12)
+	req.Title = Kuerzen(req.Title, 120)
+	req.Question = Kuerzen(req.Question, 2000)
+	req.Answer = Kuerzen(req.Answer, 500)
+	req.Hint = Kuerzen(req.Hint, 500)
 
 	if req.Title == "" {
 		return fmt.Errorf("das Rätsel braucht einen Titel")

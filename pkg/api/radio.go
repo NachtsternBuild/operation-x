@@ -129,7 +129,7 @@ func handlePostRadio(e *core.RequestEvent) error {
 		return e.BadRequestError("Die Nachricht ist leer.", nil)
 	}
 	if len([]rune(text)) > 500 {
-		text = kuerzen(text, 500)
+		text = Kuerzen(text, 500)
 	}
 
 	col, err := e.App.FindCollectionByNameOrId(schema.ColRadio)

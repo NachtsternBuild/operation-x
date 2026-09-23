@@ -256,14 +256,17 @@ func action(h func(*core.RequestEvent) error) func(*core.RequestEvent) error {
 	}
 }
 
-// kuerzen schneidet einen Text auf eine Höchstlänge – nach Zeichen, nicht nach
+// Kuerzen schneidet einen Text auf eine Höchstlänge – nach Zeichen, nicht nach
 // Bytes.
+//
+// Nach außen gegeben, weil ein aufbauendes Programm dieselben Eingaben
+// entgegennimmt und denselben Fehler machen könnte.
 //
 // text[:500] schneidet Bytes. Trifft die Grenze mitten in ein Zeichen, das
 // mehrere Bytes belegt, entsteht ungültiges UTF-8 – und im Deutschen liegt an
 // jeder dritten Stelle ein Umlaut. Aus "Königsbrücker Straße" würde dann ein
 // Fragezeichen mitten im Wort.
-func kuerzen(text string, maxRunes int) string {
+func Kuerzen(text string, maxRunes int) string {
 	if maxRunes <= 0 {
 		return ""
 	}

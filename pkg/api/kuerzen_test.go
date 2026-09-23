@@ -25,7 +25,7 @@ func TestKuerzenBleibtGueltig(t *testing.T) {
 	}
 
 	for _, f := range faelle {
-		got := kuerzen(f.text, f.max)
+		got := Kuerzen(f.text, f.max)
 
 		if !utf8.ValidString(got) {
 			t.Errorf("%s: Ergebnis ist kein gültiges UTF-8", f.name)
@@ -38,13 +38,13 @@ func TestKuerzenBleibtGueltig(t *testing.T) {
 
 func TestKuerzenLaesstKurzesInRuhe(t *testing.T) {
 	text := "Schlange an der Kasse, Laden gerammelt voll"
-	if got := kuerzen(text, 200); got != text {
+	if got := Kuerzen(text, 200); got != text {
 		t.Errorf("kurzer Text wurde verändert: %q", got)
 	}
 }
 
 func TestKuerzenAufNullIstLeer(t *testing.T) {
-	if got := kuerzen("irgendwas", 0); got != "" {
+	if got := Kuerzen("irgendwas", 0); got != "" {
 		t.Errorf("erwartet leer, bekam %q", got)
 	}
 }
