@@ -60,3 +60,23 @@ func serverSache(e *core.RequestEvent) error {
 	}
 	return ServerSache(e)
 }
+
+// Was ein aufbauendes Programm unter eigenen Wegen anbieten darf.
+//
+// Diese vier gehören nicht einem Spiel, sondern dem ganzen Server: der Weg
+// ins Internet und die Sicherung. Der Kern bietet sie der Einsatzzentrale an,
+// weil sie hier zugleich der Betreiber ist. Wer das trennt, hängt sie unter
+// einen eigenen Weg – und braucht dafür dieselben Funktionen.
+var (
+	TunnelZustand    = handleTunnelState
+	TunnelStarten    = handleTunnelStart
+	TunnelStoppen    = handleTunnelStop
+	SicherungAnlegen = handleBackup
+	SicherungenListe = handleBackupList
+)
+
+// EinrichtungNoetig sagt, ob dieser Server noch nie eingerichtet wurde.
+//
+// Nach außen gegeben, damit ein aufbauendes Programm dieselbe Frage stellen
+// kann, bevor es seine eigene Antwort darauf gibt.
+func EinrichtungNoetig(app core.App) bool { return setupNeeded(app) }
