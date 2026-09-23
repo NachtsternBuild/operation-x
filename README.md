@@ -54,10 +54,11 @@ Danach steht ein Zugang mit dem Rufzeichen `HQ` bereit, und die Einrichtung
 läuft vollständig in der Oberfläche weiter.
 
 Ein Server, ein Spiel — das ist hier die ganze Geschichte. Wer mehrere Spiele
-gleichzeitig führen will, findet das in einem eigenen Projekt:
-[operation-x-server](../operation-x-server). Es bindet dieses hier ein und
-legt Konten, Trennung und Fristen darüber. In diesem Verzeichnis kommt davon
-nichts vor.
+gleichzeitig führen will (eine Klassenfahrt mit drei Gruppen, oder ein Server
+für fremde Gruppen), findet das in einem eigenen Projekt:
+[operation-x-server](../operation-x-server). Es bindet dieses hier als
+Submodul ein und legt Konten, Trennung und Fristen darüber — Regeländerungen
+hier wirken dort mit. In diesem Verzeichnis kommt davon nichts vor.
 
 Zum Entwickeln geht es schneller mit einem fertigen Testspiel:
 
