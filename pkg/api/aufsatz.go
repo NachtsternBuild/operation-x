@@ -14,8 +14,8 @@ import (
 //
 // Deshalb liegt es woanders: operation-x-server bindet dieses Programm ein und
 // setzt die Haken hier. Solange sie leer sind, gilt jeweils die einfache
-// Antwort, und im Quelltext dieses Verzeichnisses kommt das Wort
-// "Mehrspielbetrieb" nicht vor.
+// Antwort. Außerhalb dieser Datei steht im ganzen Verzeichnis kein Wort davon
+// — das ist der Sinn der Trennung.
 //
 // Die Haken sind bewusst wenige und grob. Jeder einzelne steht für eine Frage,
 // die ein Server mit mehreren Spielen anders beantwortet als einer mit einem.
