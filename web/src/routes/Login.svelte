@@ -101,12 +101,6 @@
 </script>
 
 <div class="screen">
-  {#if aufsatz.anmeldung}
-    {@const Zusatz = aufsatz.anmeldung}
-    <Zusatz {status} {needsSetup} bind:uebernimmt={zusatzUebernimmt}
-            aufFrisch={async () => (status = await serverStatus())} />
-  {/if}
-
   {#if zusatzUebernimmt}
     <!-- Der Aufsatz zeigt gerade seinen eigenen Weg. -->
   {:else if needsSetup}
@@ -234,6 +228,16 @@
       </p>
     {/if}
   </form>
+  {/if}
+
+  {#if aufsatz.anmeldung}
+    {@const Zusatz = aufsatz.anmeldung}
+    <Zusatz
+      {status}
+      {needsSetup}
+      bind:uebernimmt={zusatzUebernimmt}
+      aufFrisch={async () => (status = await serverStatus())}
+    />
   {/if}
 </div>
 
