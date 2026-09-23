@@ -1,0 +1,287 @@
+/*
+ * Designsystem von Operation X.
+ *
+ * Bildwelt ist die Lagekarte bei Nacht: dunkles Petrolschwarz, ein feines
+ * Kartengitter, schmale Versalien wie auf technischem Gerät, Monospace für
+ * alles Zählbare.
+ *
+ * Tragend ist die Farbcodierung der Parteien, die überall dieselbe Bedeutung
+ * behält – wer im Feld auf den Bildschirm schaut, soll ohne Lesen erkennen,
+ * wen eine Meldung betrifft. Davon getrennt stehen die Zustandsfarben des
+ * Regelwerks (Hinweisqualität, Frische); sie erscheinen nie als Fläche,
+ * damit sie der Parteifarbe nicht ins Gehege kommen.
+ *
+ * Bewusst einthemig: Ein Verfolgungsspiel bei Nacht hat keine helle Variante.
+ * Dafür gibt es den Feldmodus (--field), der bei Sonnenlicht Lesbarkeit über
+ * Atmosphäre stellt.
+ */
+
+/* Schriften liegen lokal in der Binary – die App muss im Funkloch funktionieren. */
+@import '@fontsource/barlow-condensed/500.css';
+@import '@fontsource/barlow-condensed/600.css';
+@import '@fontsource/barlow-condensed/700.css';
+@import '@fontsource/barlow/400.css';
+@import '@fontsource/barlow/500.css';
+@import '@fontsource/barlow/600.css';
+@import '@fontsource/ibm-plex-mono/400.css';
+@import '@fontsource/ibm-plex-mono/500.css';
+
+:root {
+  /* --- Grundflächen --- */
+  --ground: #0b1215;
+  --sheet: #111a1e;
+  --sheet-2: #16232a;
+  --sheet-3: #1c2c34;
+  --rule: #22323a;
+  --rule-hi: #344b56;
+
+  /* --- Text --- */
+  --text: #ccd6da;
+  --text-hi: #eef4f6;
+  --muted: #7a8d95;
+  --faint: #56676e;
+
+  /* --- Parteien. Gilt in der gesamten Anwendung unverändert. --- */
+  --x: #ff5c47;   /* Mister X */
+  --det: #35c0d6; /* Detektive */
+  --hq: #d9a441;  /* HQ und System */
+
+  --x-dim: rgba(255, 92, 71, 0.13);
+  --det-dim: rgba(53, 192, 214, 0.13);
+  --hq-dim: rgba(217, 164, 65, 0.13);
+
+  /* --- Zustände. Getrennt von den Parteifarben. --- */
+  --ok: #4ec9a0;
+  --warn: #e5a03d;
+  --crit: #f2564f;
+
+  /* Hinweisqualität nach Regelwerk */
+  --intel-green: #4ec9a0;
+  --intel-yellow: #e5c04d;
+  --intel-red: #f2564f;
+
+  /* --- Typografie --- */
+  --display: 'Barlow Condensed', 'Arial Narrow', sans-serif;
+  --body: 'Barlow', system-ui, sans-serif;
+  --mono: 'IBM Plex Mono', ui-monospace, monospace;
+
+  --fs-xs: 0.72rem;
+  --fs-sm: 0.84rem;
+  --fs-base: 0.95rem;
+  --fs-lg: 1.15rem;
+  --fs-xl: 1.5rem;
+  --fs-2xl: 2rem;
+
+  /* --- Raster --- */
+  --gap: 0.75rem;
+  --pad: 1rem;
+  --radius: 2px;
+  --tap: 44px; /* Mindestgröße für Bedienung mit dem Daumen */
+
+  color-scheme: dark;
+}
+
+/*
+ * Feldmodus: draußen in der Sonne gewinnt Lesbarkeit gegen Atmosphäre.
+ * Größere Schrift, kräftigerer Kontrast, daumengroße Bedienelemente.
+ */
+:root[data-field='on'] {
+  --text: #e8f0f2;
+  --text-hi: #ffffff;
+  --muted: #a3b4bb;
+  --ground: #05090b;
+  --sheet: #0e181c;
+  --rule-hi: #486570;
+  --fs-base: 1.05rem;
+  --fs-sm: 0.95rem;
+  --tap: 56px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  height: 100%;
+}
+
+body {
+  background: var(--ground);
+  color: var(--text);
+  font-family: var(--body);
+  font-size: var(--fs-base);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  overscroll-behavior: none;
+}
+
+#app {
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Kartengitter als durchgehender Bezug zur Lagekarte. */
+.grid-bg {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background-image:
+    repeating-linear-gradient(to right, rgba(120, 160, 175, 0.05) 0 1px, transparent 1px 64px),
+    repeating-linear-gradient(to bottom, rgba(120, 160, 175, 0.05) 0 1px, transparent 1px 64px);
+}
+
+h1,
+h2,
+h3,
+h4 {
+  font-family: var(--display);
+  font-weight: 600;
+  color: var(--text-hi);
+  margin: 0;
+  line-height: 1.15;
+  text-wrap: balance;
+}
+
+p {
+  margin: 0;
+}
+
+/* Beschriftungen wie auf technischem Gerät. */
+.label {
+  font-family: var(--display);
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  font-weight: 600;
+  font-size: var(--fs-xs);
+  color: var(--muted);
+}
+
+.mono {
+  font-family: var(--mono);
+  font-variant-numeric: tabular-nums;
+}
+
+a {
+  color: var(--det);
+  text-underline-offset: 3px;
+}
+
+/* Tastaturbedienung muss sichtbar bleiben – auch mit Handschuhen im Winter
+   bedient nicht jeder per Touch. */
+:focus-visible {
+  outline: 2px solid var(--hq);
+  outline-offset: 2px;
+}
+
+button {
+  font-family: var(--display);
+  font-size: var(--fs-sm);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-weight: 600;
+  color: var(--text-hi);
+  background: var(--sheet-2);
+  border: 1px solid var(--rule-hi);
+  border-radius: var(--radius);
+  padding: 0 1rem;
+  min-height: var(--tap);
+  cursor: pointer;
+  transition: background 0.12s ease, border-color 0.12s ease;
+}
+
+button:hover:not(:disabled) {
+  background: var(--sheet-3);
+  border-color: var(--muted);
+}
+
+button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+button.primary {
+  background: var(--hq-dim);
+  border-color: var(--hq);
+  color: var(--hq);
+}
+
+button.primary:hover:not(:disabled) {
+  background: var(--hq);
+  color: var(--ground);
+}
+
+button.danger {
+  background: var(--x-dim);
+  border-color: var(--x);
+  color: var(--x);
+}
+
+button.ghost {
+  background: transparent;
+  border-color: var(--rule);
+  color: var(--muted);
+}
+
+input,
+select,
+textarea {
+  font-family: var(--mono);
+  font-size: var(--fs-base);
+  color: var(--text-hi);
+  background: var(--ground);
+  border: 1px solid var(--rule-hi);
+  border-radius: var(--radius);
+  padding: 0 0.7rem;
+  min-height: var(--tap);
+  width: 100%;
+}
+
+input:focus,
+textarea:focus {
+  border-color: var(--hq);
+  outline: none;
+}
+
+input::placeholder {
+  color: var(--faint);
+}
+
+/* Flächenbaustein für Panels und Karten. */
+.panel {
+  background: var(--sheet);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+  padding: var(--pad);
+}
+
+/* Marke am Rand – für Rollen und Zustände. */
+.tag {
+  font-family: var(--display);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  padding: 0.1rem 0.45rem;
+  border: 1px solid currentColor;
+  border-radius: var(--radius);
+  white-space: nowrap;
+  display: inline-block;
+}
+
+.tag.x { color: var(--x); }
+.tag.det { color: var(--det); }
+.tag.hq { color: var(--hq); }
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Unverschlüsselte Verbindungen.
+
+  Hier stand vorher eine Liste von Hostnamen, die ein Heimnetz abbilden sollte:
+  "192.168.0.0", "192.168.1.0". Das kann diese Datei aber nicht – ein Eintrag
+  ist ein Name, kein Adressbereich, und "192.168.0.0" erlaubt genau diese eine
+  Adresse. Ein Server unter 192.168.86.28 war damit für die App unerreichbar,
+  während der Browser auf demselben Telefon dieselbe Adresse anstandslos
+  öffnete. Der Prüflauf hat genau das gezeigt.
+
+  Die Einschränkung steht deshalb jetzt in der App (data/Adressen.kt): ohne
+  Verschlüsselung nur ins eigene Netz, alles andere ausschließlich über HTTPS.
+  Das ist prüfbar, es gilt für jedes Heimnetz, und es greift zum ersten Mal
+  überhaupt.
+-->
+<network-security-config xmlns:tools="http://schemas.android.com/tools">
+    <base-config cleartextTrafficPermitted="true" tools:ignore="InsecureBaseConfiguration">
+        <trust-anchors>
+            <certificates src="system" />
+        </trust-anchors>
+    </base-config>
+</network-security-config>

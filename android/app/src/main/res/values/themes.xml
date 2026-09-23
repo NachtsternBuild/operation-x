@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Compose bringt sein eigenes Thema mit; hier nur die Hülle für den
+         Startbildschirm, damit beim Öffnen kein weißes Blitzen entsteht. -->
+    <style name="Theme.OperationX" parent="android:Theme.Material.NoActionBar">
+        <item name="android:windowBackground">#0B1215</item>
+        <item name="android:statusBarColor">#0B1215</item>
+        <item name="android:navigationBarColor">#0B1215</item>
+    </style>
+</resources>

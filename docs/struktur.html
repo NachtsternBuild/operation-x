@@ -1,0 +1,867 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Operation X — Struktur</title>
+
+<!--
+  Wie dieses Projekt gebaut ist: Teile, Verzeichnisse, Datenmodell, der Weg
+  einer Meldung durch das System.
+
+  Eine einzelne Datei ohne Netz, ohne Schriftarten von außen, ohne Skripte —
+  wie das Regelwerk daneben. Wer das Projekt klont, kann sie sofort öffnen.
+
+  Das Regelwerk (regelwerk.html) sagt, was das Spiel tut.
+  Diese Seite sagt, wo es steht.
+-->
+
+<style>
+  :root {
+    --sheet:   #141b1e;
+    --sheet-2: #1b2429;
+    --ink:     #e8e6e1;
+    --muted:   #9aa5a8;
+    --faint:   #6b7679;
+    --rule:    #2a3639;
+    --rule-hi: #3b4b50;
+    --hq:      #d9a441;
+    --x:       #ff5c47;
+    --det:     #35c0d6;
+    --ok:      #5ad1a0;
+    --warn:    #e5a03d;
+  }
+
+  * { box-sizing: border-box; }
+  html { background: #0b1215; }
+
+  body {
+    margin: 0;
+    background: #0b1215;
+    color: var(--ink);
+    font-family: "Segoe UI", Roboto, -apple-system, "Helvetica Neue", Arial, sans-serif;
+    font-size: 17px;
+    line-height: 1.65;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  .mono {
+    font-family: "SFMono-Regular", "DejaVu Sans Mono", Menlo, Consolas, monospace;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .wrap { max-width: 54rem; margin: 0 auto; }
+
+  /* --- Kopf ------------------------------------------------------------ */
+
+  header.cover {
+    border-bottom: 1px solid var(--rule);
+    background:
+      linear-gradient(180deg, rgba(53,192,214,0.06), transparent 70%),
+      var(--sheet);
+    padding: 3rem 1.25rem 2.25rem;
+  }
+
+  .stamp {
+    display: inline-block;
+    font-size: 0.72rem;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--det);
+    border: 1px solid var(--det);
+    border-radius: 2px;
+    padding: 0.15rem 0.55rem;
+    margin-bottom: 1.1rem;
+  }
+
+  h1 {
+    font-size: clamp(2rem, 6vw, 3rem);
+    line-height: 1.05;
+    margin: 0 0 0.6rem;
+    letter-spacing: -0.01em;
+  }
+
+  .lede { color: var(--muted); max-width: 40rem; margin: 0; }
+
+  .kennzahlen {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.6rem;
+    margin-top: 1.8rem;
+    padding-top: 1.4rem;
+    border-top: 1px solid var(--rule);
+  }
+  .kennzahl b {
+    display: block;
+    font-size: 1.5rem;
+    line-height: 1.1;
+    color: var(--ink);
+    font-variant-numeric: tabular-nums;
+  }
+  .kennzahl span {
+    font-size: 0.78rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--faint);
+  }
+
+  /* --- Inhalt ---------------------------------------------------------- */
+
+  main { padding: 0 1.25rem 5rem; }
+
+  nav.inhalt {
+    margin: 2.5rem 0 1rem;
+    padding: 1.2rem 1.4rem;
+    background: var(--sheet);
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+  }
+  nav.inhalt h2 {
+    font-size: 0.72rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--faint);
+    margin: 0 0 0.7rem;
+    font-weight: 600;
+  }
+  nav.inhalt ol {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    columns: 2;
+    column-gap: 2rem;
+  }
+  nav.inhalt li { margin: 0.2rem 0; break-inside: avoid; }
+  nav.inhalt a { color: var(--ink); text-decoration: none; }
+  nav.inhalt a:hover { color: var(--det); }
+  nav.inhalt .nr {
+    color: var(--faint);
+    font-size: 0.8rem;
+    margin-right: 0.5rem;
+    font-variant-numeric: tabular-nums;
+  }
+
+  section { margin-top: 3.2rem; scroll-margin-top: 1rem; }
+
+  section > h2 {
+    font-size: 1.5rem;
+    margin: 0 0 0.3rem;
+    display: flex;
+    align-items: baseline;
+    gap: 0.7rem;
+  }
+  section > h2 .nr {
+    font-size: 0.82rem;
+    color: var(--det);
+    letter-spacing: 0.14em;
+    font-variant-numeric: tabular-nums;
+  }
+  section > .sub {
+    color: var(--muted);
+    margin: 0 0 1.4rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--rule);
+  }
+
+  h3 {
+    font-size: 1.05rem;
+    margin: 2rem 0 0.5rem;
+    color: var(--ink);
+  }
+
+  p { margin: 0 0 1rem; }
+  ul { margin: 0 0 1rem; padding-left: 1.2rem; }
+  li { margin: 0.35rem 0; }
+
+  code {
+    font-family: "SFMono-Regular", "DejaVu Sans Mono", Menlo, Consolas, monospace;
+    font-size: 0.86em;
+    background: var(--sheet-2);
+    border: 1px solid var(--rule);
+    border-radius: 3px;
+    padding: 0.05em 0.35em;
+  }
+
+  pre {
+    background: var(--sheet);
+    border: 1px solid var(--rule);
+    border-left: 2px solid var(--rule-hi);
+    border-radius: 3px;
+    padding: 1rem 1.1rem;
+    overflow-x: auto;
+    font-family: "SFMono-Regular", "DejaVu Sans Mono", Menlo, Consolas, monospace;
+    font-size: 0.82rem;
+    line-height: 1.6;
+    color: var(--ink);
+    margin: 0 0 1.2rem;
+  }
+  pre b { color: var(--det); font-weight: 600; }
+  pre i { color: var(--faint); font-style: normal; }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 0 0 1.4rem;
+    font-size: 0.9rem;
+  }
+  th, td {
+    text-align: left;
+    vertical-align: top;
+    padding: 0.5rem 0.7rem;
+    border-bottom: 1px solid var(--rule);
+  }
+  th {
+    font-size: 0.72rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--faint);
+    font-weight: 600;
+    border-bottom-color: var(--rule-hi);
+  }
+  td.mono, th.mono { white-space: nowrap; }
+  tbody tr:hover { background: rgba(53,192,214,0.04); }
+
+  .merke {
+    background: var(--sheet);
+    border: 1px solid var(--rule);
+    border-left: 2px solid var(--hq);
+    border-radius: 3px;
+    padding: 0.9rem 1.1rem;
+    margin: 0 0 1.3rem;
+    font-size: 0.94rem;
+  }
+  .merke b { color: var(--hq); }
+
+  .warn { border-left-color: var(--x); }
+  .warn b { color: var(--x); }
+
+  .rolle {
+    display: inline-block;
+    font-size: 0.7rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    border-radius: 2px;
+    padding: 0.05rem 0.4rem;
+    border: 1px solid currentColor;
+  }
+  .r-alle { color: var(--muted); }
+  .r-det  { color: var(--det); }
+  .r-x    { color: var(--x); }
+  .r-hq   { color: var(--hq); }
+
+  figure { margin: 0 0 1.5rem; }
+  figure svg { width: 100%; height: auto; display: block; }
+  figcaption {
+    font-size: 0.82rem;
+    color: var(--faint);
+    margin-top: 0.5rem;
+  }
+
+  footer {
+    border-top: 1px solid var(--rule);
+    margin-top: 4rem;
+    padding: 2rem 1.25rem 3rem;
+    color: var(--faint);
+    font-size: 0.86rem;
+  }
+  footer a { color: var(--det); }
+
+  /* --- Papier ----------------------------------------------------------- */
+
+  @media print {
+    html, body { background: #fff; color: #111; font-size: 10.5pt; }
+    header.cover { background: none; border-bottom: 1pt solid #999; padding: 0 0 1rem; }
+    .stamp { color: #111; border-color: #111; }
+    .lede, .sub, .kennzahl span, nav.inhalt h2 { color: #444; }
+    nav.inhalt { display: none; }
+    main { padding: 0; }
+    section { page-break-inside: avoid; margin-top: 1.6rem; }
+    section > h2 .nr { color: #444; }
+    pre, table, .merke, figure { page-break-inside: avoid; }
+    pre, .merke, nav.inhalt { background: #f4f4f4; border-color: #bbb; }
+    pre b { color: #111; }
+    th, td { border-bottom: 0.5pt solid #bbb; }
+    th { color: #444; }
+    code { background: #f0f0f0; border-color: #ccc; }
+    footer { color: #444; border-top: 1pt solid #999; }
+  }
+</style>
+</head>
+<body>
+
+<header class="cover">
+  <div class="wrap">
+    <span class="stamp">Aufbau des Projekts</span>
+    <h1>Operation X — Struktur</h1>
+    <p class="lede">
+      Wo was steht und warum es dort steht. Das Regelwerk daneben sagt, was
+      das Spiel tut — diese Seite ist für den, der den Quelltext vor sich hat
+      und eine Stelle sucht.
+    </p>
+
+    <div class="kennzahlen">
+      <div class="kennzahl"><b>4</b><span>Teile</span></div>
+      <div class="kennzahl"><b>19&nbsp;100</b><span>Zeilen Go</span></div>
+      <div class="kennzahl"><b>12&nbsp;000</b><span>Zeilen Svelte</span></div>
+      <div class="kennzahl"><b>6&nbsp;900</b><span>Zeilen Kotlin</span></div>
+      <div class="kennzahl"><b>3&nbsp;500</b><span>Zeilen Swift</span></div>
+      <div class="kennzahl"><b>20</b><span>Tabellen</span></div>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+
+<nav class="inhalt">
+  <h2>Inhalt</h2>
+  <ol>
+    <li><a href="#ueberblick"><span class="nr">01</span>Der Überblick</a></li>
+    <li><a href="#verzeichnis"><span class="nr">02</span>Das Verzeichnis</a></li>
+    <li><a href="#server"><span class="nr">03</span>Der Server</a></li>
+    <li><a href="#daten"><span class="nr">04</span>Was in der Datenbank steht</a></li>
+    <li><a href="#schnittstelle"><span class="nr">05</span>Die Schnittstelle</a></li>
+    <li><a href="#meldung"><span class="nr">06</span>Der Weg einer Meldung</a></li>
+    <li><a href="#krypto"><span class="nr">07</span>Die zwei Verschlüsselungen</a></li>
+    <li><a href="#oberflaechen"><span class="nr">08</span>Die drei Oberflächen</a></li>
+    <li><a href="#aufsatz"><span class="nr">09</span>Wo dieses Programm aufhört</a></li>
+    <li><a href="#bauen"><span class="nr">10</span>Bauen und Prüfen</a></li>
+    <li><a href="#aendern"><span class="nr">11</span>Wo man was ändert</a></li>
+  </ol>
+</nav>
+
+<!-- 01 -->
+<section id="ueberblick">
+  <h2><span class="nr">01</span>Der Überblick</h2>
+  <p class="sub">Vier Teile, eine Schnittstelle</p>
+
+  <p>
+    In der Mitte steht eine einzige ausführbare Datei. Sie enthält die
+    Datenbank, den Webserver, die Spielregeln und die fertige Weboberfläche.
+    Daran hängen drei Arten von Geräten, und alle drei reden dieselbe Sprache:
+    <code>/api/opx</code>.
+  </p>
+
+  <figure>
+    <svg viewBox="0 0 700 320" role="img" aria-label="Server in der Mitte, drei Oberflächen außen herum">
+      <defs>
+        <marker id="pfeil" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7"
+                markerHeight="7" orient="auto">
+          <path d="M0 0 L8 4 L0 8 z" fill="#3b4b50"/>
+        </marker>
+      </defs>
+
+      <rect x="230" y="110" width="240" height="100" rx="4"
+            fill="#1b2429" stroke="#d9a441" stroke-width="1.5"/>
+      <text x="350" y="140" text-anchor="middle" fill="#e8e6e1"
+            font-family="sans-serif" font-size="15" font-weight="600">operationx</text>
+      <text x="350" y="162" text-anchor="middle" fill="#9aa5a8"
+            font-family="sans-serif" font-size="11.5">PocketBase · Spiel-Engine</text>
+      <text x="350" y="180" text-anchor="middle" fill="#9aa5a8"
+            font-family="sans-serif" font-size="11.5">Weboberfläche eingebettet</text>
+      <text x="350" y="198" text-anchor="middle" fill="#6b7679"
+            font-family="monospace" font-size="10.5">pb_data/ · SQLite</text>
+
+      <rect x="20" y="30" width="150" height="58" rx="4"
+            fill="#141b1e" stroke="#35c0d6" stroke-width="1"/>
+      <text x="95" y="55" text-anchor="middle" fill="#e8e6e1"
+            font-family="sans-serif" font-size="13">Browser</text>
+      <text x="95" y="73" text-anchor="middle" fill="#6b7679"
+            font-family="sans-serif" font-size="11">Zentrale, Einrichtung</text>
+
+      <rect x="20" y="232" width="150" height="58" rx="4"
+            fill="#141b1e" stroke="#35c0d6" stroke-width="1"/>
+      <text x="95" y="257" text-anchor="middle" fill="#e8e6e1"
+            font-family="sans-serif" font-size="13">Android</text>
+      <text x="95" y="275" text-anchor="middle" fill="#6b7679"
+            font-family="sans-serif" font-size="11">Feld, Hintergrundortung</text>
+
+      <rect x="530" y="232" width="150" height="58" rx="4"
+            fill="#141b1e" stroke="#35c0d6" stroke-width="1"/>
+      <text x="605" y="257" text-anchor="middle" fill="#e8e6e1"
+            font-family="sans-serif" font-size="13">iOS</text>
+      <text x="605" y="275" text-anchor="middle" fill="#6b7679"
+            font-family="sans-serif" font-size="11">Feld, Entwurf</text>
+
+      <rect x="530" y="30" width="150" height="58" rx="4"
+            fill="#141b1e" stroke="#3b4b50" stroke-width="1" stroke-dasharray="4 3"/>
+      <text x="605" y="55" text-anchor="middle" fill="#9aa5a8"
+            font-family="sans-serif" font-size="13">OpenStreetMap</text>
+      <text x="605" y="73" text-anchor="middle" fill="#6b7679"
+            font-family="sans-serif" font-size="11">Kacheln, Grenzen</text>
+
+      <path d="M170 68 L228 118" stroke="#3b4b50" stroke-width="1.2" fill="none" marker-end="url(#pfeil)"/>
+      <path d="M170 252 L228 202" stroke="#3b4b50" stroke-width="1.2" fill="none" marker-end="url(#pfeil)"/>
+      <path d="M530 252 L472 202" stroke="#3b4b50" stroke-width="1.2" fill="none" marker-end="url(#pfeil)"/>
+      <path d="M472 118 L530 68" stroke="#3b4b50" stroke-width="1.2" fill="none" marker-end="url(#pfeil)"/>
+
+      <text x="196" y="100" text-anchor="middle" fill="#6b7679"
+            font-family="monospace" font-size="10">/api/opx</text>
+      <text x="196" y="228" text-anchor="middle" fill="#6b7679"
+            font-family="monospace" font-size="10">/api/opx</text>
+      <text x="506" y="228" text-anchor="middle" fill="#6b7679"
+            font-family="monospace" font-size="10">/api/opx</text>
+      <text x="506" y="100" text-anchor="middle" fill="#6b7679"
+            font-family="sans-serif" font-size="10">nur der Server</text>
+    </svg>
+    <figcaption>
+      Die Geräte sprechen nie mit OpenStreetMap, sondern immer nur mit dem
+      Spielserver. Er holt jede Kachel einmal und gibt sie an alle weiter —
+      das schont den fremden Dienst und verrät ihm nicht, wer wo hinsieht.
+    </figcaption>
+  </figure>
+
+  <div class="merke">
+    <b>Der Grundsatz dahinter:</b> Eine Datei, ein Doppelklick, ein Spiel. Alles,
+    was zusätzlich installiert werden müsste, wäre eine Stelle, an der ein
+    Spieltag scheitern kann. Deshalb keine Datenbank daneben, kein Webserver
+    davor, keine Laufzeitumgebung darunter.
+  </div>
+</section>
+
+<!-- 02 -->
+<section id="verzeichnis">
+  <h2><span class="nr">02</span>Das Verzeichnis</h2>
+  <p class="sub">Was in welchem Ordner liegt</p>
+
+<pre><b>cmd/operationx/</b>      <i>Einstieg, Unterbefehle (serve, seed, config, districts, puzzles)</i>
+<b>pkg/</b>                 <i>der Server, als Pakete zum Einbinden</i>
+  api/                 <i>alle Endpunkte unter /api/opx, nach Rolle gefiltert</i>
+  game/                <i>die Regeln: Punkte, Fristen, Hinweise, Joker, Ausgang</i>
+  schema/              <i>das Datenmodell, bei jedem Start abgeglichen</i>
+  crypt/               <i>die zweite Verschlüsselung (Lagefunk)</i>
+  geo/                 <i>Geometrie, Nominatim, Overpass</i>
+  tiles/               <i>Kachelspeicher, holt von OpenStreetMap und gibt weiter</i>
+  citysets/            <i>fertige Stadtpakete (eingebettet)</i>
+  seed/                <i>Testspiel, sprechbare Kennwörter</i>
+  sim/                 <i>Trockenübung: simulierte Spieler</i>
+  hub/                 <i>Benachrichtigung für den Lagestrom</i>
+  tunnel/              <i>cloudflared starten und überwachen</i>
+<b>web/</b>                 <i>Svelte 5, wird in die Binary eingebettet</i>
+  src/routes/          <i>ganze Seiten: Login, Setup, HQ, Control, Print, …</i>
+  src/components/      <i>Bausteine: Karte, Funk, Kontobuch, Einweisung, …</i>
+  src/lib/             <i>Sitzung, Lagestrom, Verschlüsselung, Kartenstil</i>
+  web.go               <i>go:embed all:dist</i>
+<b>android/</b>             <i>Kotlin, Jetpack Compose, MapLibre</i>
+  app/src/main/kotlin/de/operationx/app/
+    data/              <i>Api, Funk, Session, Puffer</i>
+    location/          <i>Ortung im Hintergrund</i>
+    ui/                <i>Bildschirme</i>
+<b>ios/</b>                 <i>Swift, SwiftUI, MapKit — Entwurf</i>
+  OperationX/          <i>dieselbe Gliederung wie Android</i>
+  Funkprobe/           <i>prüft die Verschlüsselung auf Linux, ohne Mac</i>
+<b>docs/</b>                <i>regelwerk.html, struktur.html (diese Seite)</i>
+<b>testdaten/</b>           <i>Prüfvektor der Verschlüsselung, für alle Sprachen</i>
+<b>bauen.sh</b>             <i>holt die Werkzeuge, baut alles, prüft alles</i>
+<b>scripts/</b>             <i>build-release.sh — Ordner für Windows, macOS, Linux</i>
+<b>tools/citysets/</b>      <i>erzeugt ein Stadtpaket aus OpenStreetMap-Daten</i>
+<b>pb_data/</b>             <i>Laufzeit: Datenbank, Uploads, Schlüssel — nie im Verlauf</i></pre>
+
+  <div class="merke">
+    <b>Was nicht im Verlauf liegt</b> und auch nicht dorthin gehört:
+    <code>pb_data/</code> (die Daten eines echten Spiels),
+    <code>web/dist/</code> (Bauergebnis),
+    <code>web/node_modules/</code>, die Bauordner von Gradle und Swift, und
+    jede gebaute Binary. Ohne <code>web/dist</code> scheitert der Go-Build —
+    deshalb steht der Bauvorgang der Oberfläche in der Anleitung <em>vor</em>
+    dem des Servers.
+  </div>
+</section>
+
+<!-- 03 -->
+<section id="server">
+  <h2><span class="nr">03</span>Der Server</h2>
+  <p class="sub">Elf Pakete, jedes mit einer Aufgabe</p>
+
+  <table>
+    <thead>
+      <tr><th class="mono">Paket</th><th>Aufgabe</th><th class="mono">Umfang</th></tr>
+    </thead>
+    <tbody>
+      <tr><td class="mono">api</td><td>Die Endpunkte. Filtert jede Antwort nach Rolle und bindet sie an genau ein Spiel.</td><td class="mono">9&nbsp;400</td></tr>
+      <tr><td class="mono">game</td><td>Die Regeln. Fristen, Punkte, Hinweisqualität, Joker, Sperren, Ausgang, Aufbewahrung.</td><td class="mono">4&nbsp;500</td></tr>
+      <tr><td class="mono">schema</td><td>Das Datenmodell und die Servereinstellungen. Läuft bei jedem Start, ist wiederholbar.</td><td class="mono">840</td></tr>
+      <tr><td class="mono">geo</td><td>Abstände, Flächen, Unschärfekreise. Dazu Nominatim (Stadtsuche) und Overpass (Grenzen).</td><td class="mono">1&nbsp;300</td></tr>
+      <tr><td class="mono">sim</td><td>Die Trockenübung: simulierte Teams laufen durch ein echtes Spiel.</td><td class="mono">660</td></tr>
+      <tr><td class="mono">seed</td><td>Testspiel Dresden, sprechbare Kennwörter aus <code>crypto/rand</code>.</td><td class="mono">680</td></tr>
+      <tr><td class="mono">tiles</td><td>Kachelspeicher mit Grenzen: Zoomstufe, Spielgebiet, kein Vorabladen.</td><td class="mono">450</td></tr>
+      <tr><td class="mono">crypt</td><td>P-256, HKDF-SHA256, AES-256-GCM, Fenster gegen Wiedereinspielen.</td><td class="mono">400</td></tr>
+      <tr><td class="mono">tunnel</td><td>Startet <code>cloudflared</code>, wenn es vorhanden ist. Liefert es nicht mit.</td><td class="mono">220</td></tr>
+      <tr><td class="mono">citysets</td><td>Fertige Stadtpakete, eingebettet in die Binary.</td><td class="mono">180</td></tr>
+      <tr><td class="mono">hub</td><td>Sagt dem Lagestrom Bescheid, wenn sich etwas geändert hat.</td><td class="mono">90</td></tr>
+    </tbody>
+  </table>
+
+  <p>
+    PocketBase wird als <em>Bibliothek</em> eingebunden, nicht als fertiger
+    Server: Es bringt Datenbank, Anmeldung, Dateiablage und Webserver mit, die
+    Spielregeln kommen aus <code>pkg/game</code>. Die Datenbankverwaltung
+    unter <code>/_/</code> ist nur vom selben Rechner erreichbar — sobald der
+    Tunnel steht, hinge sie sonst öffentlich im Netz.
+  </p>
+</section>
+
+<!-- 04 -->
+<section id="daten">
+  <h2><span class="nr">04</span>Was in der Datenbank steht</h2>
+  <p class="sub">20 Tabellen, und welche davon Personen betreffen</p>
+
+  <p>
+    Diese Übersicht ist zugleich das Verzeichnis der Verarbeitungstätigkeiten
+    im Kleinen: Die letzte Spalte sagt, was nach dem Spiel damit geschieht.
+    Ausführlich steht das in <a href="../DATENSCHUTZ.md">DATENSCHUTZ.md</a>.
+  </p>
+
+  <table>
+    <thead>
+      <tr><th class="mono">Tabelle</th><th>Inhalt</th><th>Nach dem Spiel</th></tr>
+    </thead>
+    <tbody>
+      <tr><td class="mono">positions</td><td>Standort eines Teams: Breite, Länge, Genauigkeit, Tempo, Zeitpunkt</td><td>gelöscht</td></tr>
+      <tr><td class="mono">pings</td><td>Meldefristen und ob sie eingehalten wurden</td><td>gelöscht</td></tr>
+      <tr><td class="mono">sightings</td><td>Sichtkontakte mit Ort und Zeit</td><td>gelöscht</td></tr>
+      <tr><td class="mono">evidence</td><td>Beweisfotos der Zielperson mit Aufnahmeort</td><td>Foto und Ort gelöscht, Ausgang bleibt</td></tr>
+      <tr><td class="mono">penalties</td><td>Sperren und der Ort, an dem sie gelten</td><td>Ort gelöscht</td></tr>
+      <tr><td class="mono">teams</td><td>Rufzeichen, Anzeigename, Rolle, Farbe, Kennwortprüfsumme</td><td>bleibt bis zur Löschung des Spiels</td></tr>
+      <tr><td class="mono">radio</td><td>Funksprüche der Teams, freier Text</td><td>bleibt</td></tr>
+      <tr><td class="mono">ledger</td><td>Kontobuch: jede Punktebuchung mit Begründung</td><td>bleibt</td></tr>
+      <tr><td class="mono">events</td><td>Lückenlose Ereigniskette des Spiels</td><td>bleibt, ohne Koordinaten</td></tr>
+      <tr><td class="mono">arrests</td><td>Zugriffsversuche und ihr Ausgang</td><td>bleibt</td></tr>
+      <tr><td class="mono">attempts</td><td>Rätselversuche je Team</td><td>bleibt</td></tr>
+      <tr><td class="mono">missions</td><td>Missionsbuch der Zielperson, Fristen und Fortschritt</td><td>bleibt</td></tr>
+      <tr><td class="mono">intel</td><td>Hinweise, echt und gefälscht</td><td>bleibt</td></tr>
+      <tr><td class="mono">games</td><td>Name, Stadt, Zeiten, Regelwerte, Fristen</td><td>bleibt</td></tr>
+      <tr><td class="mono">sectors, hotspots</td><td>Das Spielfeld: Flächen und Orte</td><td>bleibt (kein Personenbezug)</td></tr>
+      <tr><td class="mono">puzzles, jokers, zones, mission_options</td><td>Inhalte und Einsatzmittel</td><td>bleibt (kein Personenbezug)</td></tr>
+    </tbody>
+  </table>
+
+  <div class="merke warn">
+    <b>Alle Zugriffsregeln sind gesperrt.</b> PocketBase stellt für jede Tabelle
+    eine allgemeine Schnittstelle bereit
+    (<code>/api/collections/…/records</code>). Sie ist hier für jedermann
+    geschlossen — auch für angemeldete Teams. Daten gibt es ausschließlich über
+    die Endpunkte unter <code>/api/opx</code>, und die filtern nach Rolle und
+    Spiel. Ein Fahndungsteam, das die Position der Zielperson abfragt, bekommt
+    einen Unschärfekreis, kein Paar Koordinaten.
+  </div>
+</section>
+
+<!-- 05 -->
+<section id="schnittstelle">
+  <h2><span class="nr">05</span>Die Schnittstelle</h2>
+  <p class="sub">Wer was darf</p>
+
+  <table>
+    <thead>
+      <tr><th class="mono">Gruppe</th><th>Wer</th><th>Wofür</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="mono">/api/opx/status<br>/key<br>/tiles/…<br>/firstrun</td>
+        <td><span class="rolle r-alle">offen</span></td>
+        <td>Zustand des Servers, öffentlicher Schlüssel, Kartenkacheln, allererste Einrichtung</td>
+      </tr>
+      <tr>
+        <td class="mono">/api/opx/…</td>
+        <td><span class="rolle r-alle">jedes Team</span></td>
+        <td>Lage, Karte, Standortmeldung, Rätsel, Hinweise, Joker, Funk, Regeln, Kontobuch</td>
+      </tr>
+      <tr>
+        <td class="mono">/sighting<br>/arrest</td>
+        <td><span class="rolle r-det">Fahndung</span></td>
+        <td>Sichtkontakt melden, Zugriff in drei Stufen</td>
+      </tr>
+      <tr>
+        <td class="mono">/mission/…</td>
+        <td><span class="rolle r-x">Zielperson</span></td>
+        <td>Missionsbuch, Routenwahl, Vor-Ort-Code, Beweisfoto, Verzögerung</td>
+      </tr>
+      <tr>
+        <td class="mono">/setup/…</td>
+        <td><span class="rolle r-hq">Zentrale</span></td>
+        <td>Sektoren, Hotspots, Rätsel, Regelwerte, Teamkarten, Zugänge</td>
+      </tr>
+      <tr>
+        <td class="mono">/hq/…</td>
+        <td><span class="rolle r-hq">Zentrale</span></td>
+        <td>Start und Ende, Protokoll, Beweisprüfung, Eingriffe, Sicherung, Trockenübung</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <p>
+    Das Spiel, zu dem eine Anfrage gehört, kommt <em>immer</em> aus dem
+    angemeldeten Datensatz — nie aus der Anfrage selbst. Wer die Kennung eines
+    fremden Spiels einsetzt, bekommt dieselbe Antwort wie für etwas, das es
+    nicht gibt: <code>404</code>.
+  </p>
+</section>
+
+<!-- 06 -->
+<section id="meldung">
+  <h2><span class="nr">06</span>Der Weg einer Meldung</h2>
+  <p class="sub">Von der Hosentasche bis auf den Bildschirm der Zentrale</p>
+
+  <p>
+    Eine Architektur versteht man am schnellsten, wenn man einer einzelnen
+    Sache beim Durchlaufen zusieht. Hier: einer Standortmeldung.
+  </p>
+
+<pre><b>1. Telefon</b>    Die Ortung im Hintergrund hat einen Punkt.
+             Er wandert zuerst in den Puffer auf dem Gerät —
+             im Funkloch bleibt er dort liegen.
+             <i>android/…/location/LocationService.kt</i>
+
+<b>2. Funk</b>       Der Rumpf wird verschlüsselt: AES-256-GCM, Beiwerk ist
+             "POST /api/opx/position <i>nummer</i>". Schlüssel und Nummer
+             stehen in den Kopfzeilen.
+             <i>android/…/data/Funk.kt · ios/…/Data/Funk.swift</i>
+
+<b>3. Tunnel</b>     Falls einer läuft: Cloudflare sieht HTTPS, entschlüsselt es
+             — und findet darunter die zweite Verschlüsselung.
+
+<b>4. Server</b>     Eine Zwischenschicht entschlüsselt den Rumpf, bevor
+             irgendein Endpunkt ihn sieht. Der übrige Server weiß von
+             der Verschlüsselung nichts.
+             <i>pkg/api/secure.go</i>
+
+<b>5. Prüfung</b>    Gehört das Team zu diesem Spiel? Ist die Meldung plausibel
+             — Tempo, Genauigkeit, Fake-GPS-Kennzeichen des Geräts?
+             <i>pkg/api/position.go</i>
+
+<b>6. Regeln</b>     War die Frist fällig? Dann Verwarnung, Abzug oder Sperre.
+             Läuft eine Mission? Dann zählt der Abstand zum Ziel.
+             <i>pkg/game/</i>
+
+<b>7. Ablage</b>     Position, Ping und gegebenenfalls eine Buchung im Kontobuch.
+
+<b>8. Lagestrom</b>  Der Hub weckt alle offenen Ströme. Die Zentrale sieht den
+             Punkt binnen einer Sekunde, die Fahndung einen Kreis von
+             200 Metern — falls sie ihn sich erarbeitet hat.
+             <i>pkg/hub/ · pkg/api/stream.go</i>
+
+<b>9. Zurück</b>     Die Antwort wird mit demselben Schlüssel versiegelt und
+             sagt dem Gerät, wann die nächste Meldung fällig ist.</pre>
+
+  <div class="merke">
+    <b>Gewertet wird der Erfassungszeitpunkt, nicht der Eingang.</b> Sonst wäre
+    jedes Funkloch eine Strafe. Deshalb trägt jede Meldung ihren eigenen
+    Zeitstempel, und der Puffer darf nachreichen, ohne dass jemand dafür
+    bestraft wird.
+  </div>
+</section>
+
+<!-- 07 -->
+<section id="krypto">
+  <h2><span class="nr">07</span>Die zwei Verschlüsselungen</h2>
+  <p class="sub">Warum eine nicht reicht</p>
+
+  <p>
+    Der Tunnel macht den Server von unterwegs erreichbar, ohne dass jemand
+    einen Anschluss öffnen oder ein Zertifikat besorgen muss. Er endet aber
+    nicht auf dem Spielserver, sondern beim Betreiber des Tunnels — dort liegt
+    der Verkehr im Klartext. Bei diesem Spiel wäre das der Standortverlauf von
+    zwanzig Leuten über sechs Stunden.
+  </p>
+
+  <p>
+    Deshalb verschlüsselt jedes Gerät ein zweites Mal, unabhängig vom Tunnel:
+    ECDH auf P-256, daraus per HKDF-SHA256 ein Sitzungsschlüssel, damit
+    AES-256-GCM. Dasselbe Verfahren steht viermal im Projekt, und diese drei
+    Einzelheiten müssen überall zeichengenau übereinstimmen:
+  </p>
+
+  <ul>
+    <li>Das Salz von HKDF ist <code>eigenerSchlüssel|Serverschlüssel</code>, beide base64url ohne Auffüllzeichen.</li>
+    <li>Das Beiwerk ist <code>METHODE /pfad?abfrage nummer</code> — mit Abfrageteil.</li>
+    <li>Übertragen werden Chiffrat und Siegel hintereinander, der Zufallswert steht in der Kopfzeile.</li>
+  </ul>
+
+  <table>
+    <thead><tr><th>Wo</th><th class="mono">Datei</th></tr></thead>
+    <tbody>
+      <tr><td>Server</td><td class="mono">pkg/crypt/ · pkg/api/secure.go</td></tr>
+      <tr><td>Browser</td><td class="mono">web/src/lib/funk.svelte.js</td></tr>
+      <tr><td>Android</td><td class="mono">android/…/data/Funk.kt</td></tr>
+      <tr><td>iOS</td><td class="mono">ios/OperationX/Data/Funk.swift</td></tr>
+    </tbody>
+  </table>
+
+  <div class="merke">
+    <b>Das Kennzeichen</b> ist die einzige Stelle, an der sich ein
+    untergeschobener Server verrät: sechs Gruppen aus vier Zeichen, oben im
+    Gerät und auf der gedruckten Teamkarte. Sind sie gleich, sitzt niemand
+    dazwischen. Die Apps merken sich das Kennzeichen jedes Servers und warnen,
+    wenn dieselbe Adresse plötzlich ein anderes nennt.
+  </div>
+
+  <p>
+    Was das <em>nicht</em> leistet: Der Spielserver sieht weiterhin alles — er
+    ist das Spiel. Und wer mitliest, sieht weiterhin, wann wie viel an welche
+    Adresse geht. Wer den Rechner hat, hat die Datenbank.
+  </p>
+</section>
+
+<!-- 08 -->
+<section id="oberflaechen">
+  <h2><span class="nr">08</span>Die drei Oberflächen</h2>
+  <p class="sub">Dieselbe Schnittstelle, drei Werkzeuge</p>
+
+  <h3>Browser (Svelte 5)</h3>
+  <p>
+    Die vollständige Oberfläche: Einrichtung, Regelpult, Druck, Zentrale,
+    Zeitleiste — und auch das Feld, für alle, die keine App installieren
+    wollen. Wird beim Bauen in die Binary eingebettet. Zustand über Runen
+    (<code>$state</code>, <code>$derived</code>), Lage über einen
+    Ereignisstrom.
+  </p>
+
+  <h3>Android (Kotlin, Compose)</h3>
+  <p>
+    Für das Feld gebaut. Ortung im Hintergrund mit gesperrtem Bildschirm,
+    Puffer fürs Funkloch, QR-Scanner (ZXing), Karte mit MapLibre. Hält eine
+    offene Verbindung zum Server und erfährt jede Änderung in unter einer
+    Sekunde.
+  </p>
+
+  <h3>iOS (Swift, SwiftUI) — Entwurf</h3>
+  <p>
+    Dieselben Bildschirme, dieselben Texte, MapKit statt MapLibre, kein eigener
+    QR-Scanner (die Kamera-App kann das). Fragt alle zehn Sekunden nach, statt
+    zuzuhören. Übersetzt ist bisher nur, was ohne Apple-SDK geht — die
+    Verschlüsselung allerdings vollständig, gegen einen echten Server:
+    <code>ios/Funkprobe/pruefen.sh</code>.
+  </p>
+
+  <div class="merke">
+    <b>Was überall gleich sein muss:</b> die Texte der Einweisung, die drei
+    Parteifarben (Zielperson rot, Fahndung blau, Zentrale gold) und das
+    Beiwerk der Verschlüsselung. Alles andere darf sich unterscheiden, wo die
+    Plattform es nahelegt.
+  </div>
+</section>
+
+<!-- 09 -->
+<section id="aufsatz">
+  <h2><span class="nr">09</span>Wo dieses Programm aufhört</h2>
+  <p class="sub">Ein Server, ein Spiel — und was darüber liegt</p>
+
+  <p>
+    Dieses Programm führt genau ein Spiel. Das ist keine Einschränkung, die man
+    später wegräumt, sondern die Voreinstellung: ein Nachmittag, ein Laptop,
+    eine Gruppe. Im Quelltext dieses Verzeichnisses kommt der Gedanke „mehrere
+    Spiele“ nirgends vor.
+  </p>
+
+  <p>
+    Wer mehrere Spiele gleichzeitig führen will — eine Klassenfahrt mit drei
+    Gruppen, oder ein Server, den mehrere Gruppen nacheinander benutzen —
+    braucht eine Ebene darüber: Konten, Trennung, Fristen, eine Übersicht. Die
+    liegt in einem eigenen Projekt, <code>operation-x-server</code>. Es bindet
+    dieses hier als Bibliothek ein und hängt sich an wenigen Stellen ein:
+  </p>
+
+  <table>
+    <thead><tr><th class="mono">Haken</th><th>Wofür</th></tr></thead>
+    <tbody>
+      <tr><td class="mono">api.Zusatzrouten</td><td>Weitere Endpunkte, nach den eigenen registriert</td></tr>
+      <tr><td class="mono">api.StatusZusatz</td><td>Weitere Felder in der Antwort auf <code>/status</code></td></tr>
+      <tr><td class="mono">api.EinrichtungOffen</td><td>Ob die Ersteinrichtung noch aussteht</td></tr>
+      <tr><td class="mono">api.ServerSache</td><td>Wer Sicherung und Tunnel schalten darf</td></tr>
+      <tr><td class="mono">api.SpielDesServers</td><td>Welches Spiel eine Anfrage ohne Anmeldung meint</td></tr>
+      <tr><td class="mono">api.Rufzeichen</td><td>Wie ein Anmeldename gebildet wird</td></tr>
+      <tr><td class="mono">schema.Nacharbeit</td><td>Eigene Sammlungen und zusätzliche Felder</td></tr>
+      <tr><td class="mono">aufsatz (Web)</td><td>Drei Steckplätze in der Oberfläche</td></tr>
+    </tbody>
+  </table>
+
+  <div class="merke">
+    <b>Warum getrennt und nicht als Schalter.</b> Ein Schalter hätte bedeutet,
+    dass jeder, der einen Geburtstag ausrichtet, im Quelltext und in der
+    Anleitung über Veranstalterkonten stolpert — und dass jede Frage zweimal
+    beantwortet werden muss: „und wie ist das, wenn mehrere Spiele laufen?“
+    Getrennt beantwortet jedes Verzeichnis nur seine eigene Hälfte.
+  </div>
+</section>
+
+<!-- 10 -->
+<section id="bauen">
+  <h2><span class="nr">10</span>Bauen und Prüfen</h2>
+  <p class="sub">Die Reihenfolge und was sie garantiert</p>
+
+<pre><i># Nach dem Klonen genügt ein Befehl: holt die Werkzeuge, baut, prüft</i>
+./bauen.sh
+
+<i># Von Hand — Oberfläche zuerst, sie wird in die Binary eingebettet</i>
+cd web &amp;&amp; npm install &amp;&amp; npm run build &amp;&amp; cd ..
+go build -o operationx ./cmd/operationx
+
+<i># Alles auf einmal, für Windows, macOS und Linux</i>
+./scripts/build-release.sh
+
+<i># Prüfen</i>
+go test ./pkg/...              <i>Regeln, Sichtbarkeit, Spieltrennung, Löschen</i>
+cd web &amp;&amp; npm test                 <i>der Kern der Verschlüsselung</i>
+cd android &amp;&amp; ./bauen.sh           <i>prüft, baut, spielt auf ein Gerät</i>
+cd ios/Funkprobe &amp;&amp; ./pruefen.sh   <i>iOS-Verschlüsselung gegen echten Server</i></pre>
+
+  <p>Was die Tests festhalten:</p>
+  <ul>
+    <li><b>Das Regelwerk kann nicht unbemerkt altern.</b> Jede Zahl in
+      <code>regelwerk.html</code> trägt den Schlüssel ihres Regelwerts; ein
+      Test vergleicht 98 Zahlen mit den Voreinstellungen im Code.</li>
+    <li><b>Die Sichtbarkeit stimmt.</b> Was ein Fahndungsteam von der
+      Zielperson sieht, ist ein Unschärfekreis — geprüft, nicht behauptet.</li>
+    <li><b>Die Verschlüsselung passt zwischen den Sprachen.</b> Go, Kotlin und
+      JavaScript rechnen denselben Prüfvektor nach
+      (<code>testdaten/lagefunk.json</code>): dieselbe Ableitung, dasselbe
+      Beiwerk samt Abfrageteil, dieselben Bytes. Der Prüfstand in
+      <code>ios/Funkprobe</code> redet zusätzlich mit einem laufenden
+      Server.</li>
+    <li><b>Die Bewegungsspur verschwindet wirklich.</b> Ein Test legt ein
+      Spiel mit Positionen, Beweisfoto und Sperre an, lässt die Frist ablaufen
+      und sieht nach, was übrig ist.</li>
+  </ul>
+</section>
+
+<!-- 11 -->
+<section id="aendern">
+  <h2><span class="nr">11</span>Wo man was ändert</h2>
+  <p class="sub">Die häufigsten Absichten und ihre Stelle</p>
+
+  <table>
+    <thead><tr><th>Wenn du …</th><th class="mono">… dann hier</th></tr></thead>
+    <tbody>
+      <tr><td>einen Regelwert ändern willst (Punkte, Fristen, Abstände)</td><td class="mono">pkg/game/rules.go — und regelwerk.html mitziehen, der Test merkt es</td></tr>
+      <tr><td>einen neuen Endpunkt brauchst</td><td class="mono">pkg/api/api.go (Registrierung) + eigene Datei daneben</td></tr>
+      <tr><td>ein Feld in der Datenbank brauchst</td><td class="mono">pkg/schema/schema.go — läuft beim nächsten Start von selbst</td></tr>
+      <tr><td>einen Joker hinzufügen willst</td><td class="mono">pkg/game/jokers.go (Katalog) + Wirkung im selben Paket</td></tr>
+      <tr><td>die Einweisung ändern willst</td><td class="mono">drei Stellen, wortgleich: Onboarding.svelte, OnboardingScreen.kt, JoinLogin.swift</td></tr>
+      <tr><td>an der Verschlüsselung etwas drehst</td><td class="mono">vier Stellen: crypt/, funk.svelte.js, Funk.kt, Funk.swift — sonst scheitert sie lautlos</td></tr>
+      <tr><td>eine Stadt vorbereiten willst</td><td class="mono">tools/citysets — oder den KI-Auftrag aus der Einrichtungsseite kopieren</td></tr>
+      <tr><td>das Aussehen ändern willst</td><td class="mono">web/src/lib/styles.css · android/…/ui/theme · ios/…/UI/Theme.swift</td></tr>
+      <tr><td>wissen willst, was gespeichert wird</td><td class="mono">Abschnitt 04 hier, ausführlich in DATENSCHUTZ.md</td></tr>
+    </tbody>
+  </table>
+</section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <p>
+      Operation X — Struktur des Projekts. Daneben:
+      <a href="regelwerk.html">regelwerk.html</a> (was das Spiel tut),
+      <a href="../DATENSCHUTZ.md">DATENSCHUTZ.md</a> (was mit den Daten
+      geschieht), <a href="../HERKUNFT.md">HERKUNFT.md</a> (woher die Teile
+      stammen).
+    </p>
+    <p>
+      Diese Seite braucht kein Netz und keine Skripte. Sie lässt sich drucken
+      und im Funkloch öffnen.
+    </p>
+  </div>
+</footer>
+
+</body>
+</html>

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Wohin die Kamera das Beweisfoto legen darf.
+
+  Nur ein eigener Ordner im App-Cache: Das Bild wird hochgeladen und danach
+  nicht mehr gebraucht. Es hat in der Galerie nichts verloren – nach dem Spiel
+  soll vom Spiel nichts übrig bleiben, was niemand mehr zuordnen kann.
+-->
+<paths>
+    <cache-path name="beweise" path="beweise/" />
+</paths>

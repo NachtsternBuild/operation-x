@@ -1,0 +1,12 @@
+{
+  "hinweis": "Prüfvektor für die zweite Verschlüsselung (Lagefunk). Dieselben Zahlen prüfen Go, Kotlin und JavaScript. Erzeugt von internal/crypt/vektor_test.go.",
+  "gemeinsamesGeheimnisHex": "5d3c1f9a0b7e46528a91d4c06f3b28e77c15904ad8e263b1f0a94c7d85e21306",
+  "clientPublicKey": "BLsMG0jA_CB9D61E7jp7QfVOX2C8q2tN-1lfrIOMIpHUGTQ6gTquQ4f1p0mLN3ltquIEWRr5_vNCvVf3ZldbH3k",
+  "serverPublicKey": "BEYZdXIIgFbm7v6uhxmgXyur6Bk-q2TaAZjNCTWSpF2NUYY_YJV2liYYzF5Gcbp3WWJnMGLe3gw3nlnAmIpUDIg",
+  "info": "operation-x/lagefunk/1",
+  "schluesselHex": "7bb856fc784bb04c753350aa19df2ac62d943cfd52f351d6eb1f3ece3e34fa1e",
+  "nonceHex": "a1b2c3d4e5f60718293a4b5c",
+  "beiwerk": "POST /api/opx/position?seit=3 7",
+  "klartext": "Lagemeldung: 51.0504, 13.7373 — Zielperson gesichtet.",
+  "chiffreHex": "047862ddba89ee8dffe83a43de08857a317c5ee40bda3c36a0c27b6f6bbeefc2421fabddb2a8b4099a2e0a20d3e4b0ac5adc1873db00ac962ea0a33715e8658082f04be5c619d4"
+}

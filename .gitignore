@@ -1,0 +1,43 @@
+# Laufzeitdaten des Servers (Datenbank, Uploads, Backups)
+/pb_data/
+
+# Gebaute Oberfläche und Abhängigkeiten
+/web/dist/
+/web/node_modules/
+
+# Kompilierte Binaries
+/operationx
+/operationx-release
+/dist/
+# Was beim Bauen der Werkzeuge im Wurzelverzeichnis liegen bleibt
+/citysets
+/poiprobe
+
+# Android
+/android/.kotlin/
+/android/.gradle/
+/android/build/
+/android/app/build/
+/android/local.properties
+/android/.idea/
+*.apk
+
+# iOS
+/ios/OperationX.xcodeproj/
+/ios/DerivedData/
+/ios/build/
+
+# Der Prüfstand holt sich die echte Funk.swift beim Lauf – sie gehört nach
+# ios/OperationX und soll nicht zweimal im Verlauf stehen.
+/ios/Funkprobe/.build/
+/ios/Funkprobe/Package.resolved
+/ios/Funkprobe/Sources/Funkprobe/Funk.swift
+
+# Was Editoren und Betriebssysteme danebenlegen
+.idea/
+.vscode/
+*.iml
+.DS_Store
+Thumbs.db
+*~
+*.swp

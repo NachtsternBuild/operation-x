@@ -1,0 +1,70 @@
+# Xcode-Projekt aus einer Datei.
+#
+# Ein .xcodeproj ist eine große, empfindliche Datei, die niemand von Hand
+# schreiben sollte und die in einem Repository bei jeder Änderung Konflikte
+# macht. XcodeGen baut sie aus dieser Beschreibung:
+#
+#     brew install xcodegen
+#     cd ios && xcodegen generate && open OperationX.xcodeproj
+#
+# Wer XcodeGen nicht will: In Xcode "File → New → Project → iOS App" anlegen,
+# den Ordner OperationX hineinziehen und die Einträge unter "info" von Hand in
+# die Ziel-Einstellungen übernehmen. Dauert fünf Minuten.
+
+name: OperationX
+
+options:
+  bundleIdPrefix: de.operationx
+  deploymentTarget:
+    iOS: "16.0"
+  createIntermediateGroups: true
+
+targets:
+  OperationX:
+    type: application
+    platform: iOS
+    sources:
+      - path: OperationX
+
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: de.operationx.app
+        MARKETING_VERSION: "1.0"
+        CURRENT_PROJECT_VERSION: "1"
+        SWIFT_VERSION: "5.9"
+        TARGETED_DEVICE_FAMILY: "1"   # nur iPhone; gespielt wird unterwegs
+        INFOPLIST_KEY_UILaunchScreen_Generation: YES
+        INFOPLIST_KEY_UISupportedInterfaceOrientations: UIInterfaceOrientationPortrait
+
+    info:
+      path: OperationX/Info.plist
+      properties:
+        CFBundleDisplayName: Operation X
+
+        # Der Standort ist der Kern dieser App, und beide Texte erscheinen
+        # wörtlich in der Systemabfrage. Sie müssen erklären, wofür – "für die
+        # App-Funktion" wäre sowohl nutzlos als auch ein Ablehnungsgrund.
+        NSLocationWhenInUseUsageDescription: >-
+          Damit die Einsatzzentrale euch auf der Lagekarte sieht und die
+          Meldepflicht des Spiels erfüllt ist.
+        NSLocationAlwaysAndWhenInUseUsageDescription: >-
+          Damit euer Standort auch mit gesperrtem Bildschirm weitergemeldet
+          wird. Ohne diese Erlaubnis müsstet ihr das Telefon sechs Stunden
+          lang offen in der Hand halten. Alles Ortsbezogene löscht sich nach
+          dem Spiel von selbst.
+
+        UIBackgroundModes:
+          - location
+
+        # Der Spielserver läuft oft auf einem Laptop im selben WLAN, also über
+        # http. Durch den Tunnel ist es https; im eigenen Netz gibt es kein
+        # Zertifikat und keine Möglichkeit, eines zu bekommen. Deshalb hier
+        # die Ausnahme – und deshalb verschlüsselt die App zusätzlich selbst
+        # (Data/Funk.swift).
+        NSAppTransportSecurity:
+          NSAllowsArbitraryLoads: true
+          NSAllowsLocalNetworking: true
+
+        # Für die Auslieferung über den App Store wäre hier eine Angabe zur
+        # Ausfuhrkontrolle nötig. Diese App wird nicht darüber verteilt.
+        ITSAppUsesNonExemptEncryption: false

@@ -1,0 +1,1080 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Operation X — Regelwerk</title>
+
+<!--
+  Das vollständige Regelwerk, wie der Server es anwendet.
+
+  Eine einzelne Datei ohne Netz, ohne Schriftarten von außen, ohne Skripte:
+  Sie soll sich am Spieltag auf einem Telefon im Funkloch öffnen lassen und
+  auf Papier genauso lesbar sein.
+
+  Jede Zahl darin trägt den Schlüssel des Regelwerts, aus dem sie stammt
+  (data-regel). Ein Test in pkg/game/regelwerk_test.go vergleicht sie
+  mit der Voreinstellung im Code — diese Seite kann also nicht unbemerkt
+  altern, und wer einen Wert ändert, merkt es hier.
+-->
+
+<style>
+  :root {
+    --sheet:   #141b1e;
+    --sheet-2: #1b2429;
+    --ink:     #e8e6e1;
+    --muted:   #9aa5a8;
+    --faint:   #6b7679;
+    --rule:    #2a3639;
+    --rule-hi: #3b4b50;
+    --hq:      #d9a441;
+    --x:       #ff5c47;
+    --det:     #35c0d6;
+    --ok:      #5ad1a0;
+    --warn:    #e5a03d;
+  }
+
+  * { box-sizing: border-box; }
+
+  html { background: #0b1215; }
+
+  body {
+    margin: 0;
+    background: #0b1215;
+    color: var(--ink);
+    font-family: "Segoe UI", Roboto, -apple-system, "Helvetica Neue", Arial, sans-serif;
+    font-size: 17px;
+    line-height: 1.65;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  .mono {
+    font-family: "SFMono-Regular", "DejaVu Sans Mono", Menlo, Consolas, monospace;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* --- Kopf ------------------------------------------------------------ */
+
+  header.cover {
+    border-bottom: 1px solid var(--rule);
+    background:
+      linear-gradient(180deg, rgba(217,164,65,0.06), transparent 70%),
+      var(--sheet);
+    padding: 3rem 1.25rem 2.25rem;
+  }
+
+  .wrap { max-width: 54rem; margin: 0 auto; }
+
+  .stamp {
+    display: inline-block;
+    font-size: 0.72rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--hq);
+    border: 1px solid var(--hq);
+    padding: 0.15rem 0.5rem;
+  }
+
+  h1 {
+    font-size: clamp(2rem, 7vw, 3.2rem);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin: 0.9rem 0 0.3rem;
+    line-height: 1.05;
+  }
+
+  h1 .thin {
+    display: block;
+    font-size: 0.32em;
+    letter-spacing: 0.22em;
+    color: var(--muted);
+    text-transform: uppercase;
+    margin-bottom: 0.5rem;
+  }
+
+  .deck { color: var(--muted); max-width: 46ch; margin: 0.8rem 0 0; }
+
+  /* --- Gliederung ------------------------------------------------------ */
+
+  nav.toc {
+    max-width: 54rem;
+    margin: 2rem auto 0;
+    padding: 0 1.25rem;
+  }
+
+  nav.toc ol {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
+    gap: 0.15rem 1.5rem;
+  }
+
+  nav.toc a {
+    display: flex;
+    gap: 0.6rem;
+    color: var(--ink);
+    text-decoration: none;
+    padding: 0.3rem 0;
+    border-bottom: 1px solid transparent;
+  }
+
+  nav.toc a:hover { color: var(--hq); border-bottom-color: var(--rule); }
+  nav.toc .n { color: var(--faint); font-size: 0.85rem; min-width: 1.6rem; }
+
+  /* --- Abschnitte ------------------------------------------------------ */
+
+  main { max-width: 54rem; margin: 0 auto; padding: 0 1.25rem 5rem; }
+
+  section { padding-top: 3rem; }
+
+  h2 {
+    font-size: 1.5rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin: 0 0 0.2rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--rule);
+  }
+
+  h2 .n { color: var(--hq); margin-right: 0.6rem; font-size: 0.85em; }
+
+  h3 {
+    font-size: 1.05rem;
+    letter-spacing: 0.04em;
+    margin: 2rem 0 0.4rem;
+    color: var(--ink);
+  }
+
+  .lead { color: var(--muted); margin: 0.2rem 0 1.5rem; }
+
+  p { margin: 0 0 1rem; }
+
+  b.w {
+    color: var(--hq);
+    font-weight: 600;
+    font-family: "SFMono-Regular", "DejaVu Sans Mono", Menlo, Consolas, monospace;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+
+  /* --- Rollenmarke ----------------------------------------------------- */
+
+  .fuer {
+    display: inline-block;
+    font-size: 0.7rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    padding: 0.1rem 0.45rem;
+    border: 1px solid currentColor;
+    vertical-align: 0.15em;
+    margin-left: 0.5rem;
+  }
+
+  .fuer.x   { color: var(--x); }
+  .fuer.det { color: var(--det); }
+  .fuer.hq  { color: var(--hq); }
+
+  /* --- Kasten ---------------------------------------------------------- */
+
+  .kasten {
+    background: var(--sheet);
+    border: 1px solid var(--rule);
+    border-left: 3px solid var(--rule-hi);
+    padding: 0.9rem 1.1rem;
+    margin: 1.2rem 0;
+  }
+
+  .kasten.merk { border-left-color: var(--hq); }
+  .kasten.warn { border-left-color: var(--warn); }
+  .kasten h4 {
+    margin: 0 0 0.4rem;
+    font-size: 0.78rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .kasten p:last-child { margin-bottom: 0; }
+
+  /* --- Tabellen -------------------------------------------------------- */
+
+  .tabelle { width: 100%; overflow-x: auto; margin: 1rem 0 1.5rem; }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.95rem;
+  }
+
+  th, td {
+    text-align: left;
+    padding: 0.55rem 0.7rem;
+    border-bottom: 1px solid var(--rule);
+    vertical-align: top;
+  }
+
+  th {
+    font-size: 0.72rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--muted);
+    font-weight: 600;
+    border-bottom-color: var(--rule-hi);
+  }
+
+  tbody tr:hover { background: rgba(255,255,255,0.02); }
+
+  td.zahl {
+    font-family: "SFMono-Regular", "DejaVu Sans Mono", Menlo, Consolas, monospace;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+    color: var(--hq);
+  }
+
+  td.neg { color: var(--x); }
+
+  .schluessel {
+    font-family: "SFMono-Regular", "DejaVu Sans Mono", Menlo, Consolas, monospace;
+    font-size: 0.8rem;
+    color: var(--faint);
+  }
+
+  /* --- Listen ---------------------------------------------------------- */
+
+  ul, ol { margin: 0 0 1rem; padding-left: 1.3rem; }
+  li { margin-bottom: 0.4rem; }
+
+  .schritte {
+    list-style: none;
+    padding: 0;
+    counter-reset: schritt;
+  }
+
+  .schritte li {
+    counter-increment: schritt;
+    display: flex;
+    gap: 0.9rem;
+    margin-bottom: 0.9rem;
+  }
+
+  .schritte li::before {
+    content: counter(schritt, decimal-leading-zero);
+    color: var(--hq);
+    font-family: "SFMono-Regular", "DejaVu Sans Mono", Menlo, Consolas, monospace;
+    font-size: 0.85rem;
+    padding-top: 0.15rem;
+  }
+
+  footer {
+    max-width: 54rem;
+    margin: 0 auto;
+    padding: 2rem 1.25rem 4rem;
+    border-top: 1px solid var(--rule);
+    color: var(--faint);
+    font-size: 0.85rem;
+  }
+
+  a { color: var(--hq); }
+
+  /* --- Papier ---------------------------------------------------------- */
+
+  @media print {
+    html, body { background: #fff; color: #000; }
+    header.cover { background: none; padding: 0 0 1rem; }
+    nav.toc { display: none; }
+    section { padding-top: 1.2rem; page-break-inside: avoid; }
+    h2 { page-break-after: avoid; }
+    .kasten { border: 1px solid #999; background: none; }
+    b.w, td.zahl, h2 .n, .stamp { color: #000; }
+    .fuer { border-color: #000; color: #000; }
+    th, td { border-bottom: 1px solid #ccc; }
+    a { color: #000; text-decoration: none; }
+    table { font-size: 10pt; }
+    body { font-size: 11pt; }
+  }
+</style>
+</head>
+<body>
+
+<header class="cover">
+  <div class="wrap">
+    <span class="stamp">Regelwerk v3.2</span>
+    <h1><span class="thin">Vollständige Regeln und ihre Anwendung</span>Operation X</h1>
+    <p class="deck">
+      Was gilt, wann es greift und wer es merkt. Alle Zahlen sind die
+      Voreinstellung — die Spielleitung kann jede davon vor dem Start ändern.
+      Was in eurem Spiel gilt, steht jederzeit unter „Regeln“ in der Kopfleiste.
+    </p>
+  </div>
+</header>
+
+<nav class="toc">
+  <ol>
+    <li><a href="#spiel"><span class="n">01</span><span>Das Spiel</span></a></li>
+    <li><a href="#rollen"><span class="n">02</span><span>Die drei Rollen</span></a></li>
+    <li><a href="#ablauf"><span class="n">03</span><span>Ablauf eines Spiels</span></a></li>
+    <li><a href="#melden"><span class="n">04</span><span>Meldepflicht</span></a></li>
+    <li><a href="#transit"><span class="n">05</span><span>Transit</span></a></li>
+    <li><a href="#stillstand"><span class="n">06</span><span>Stillstand</span></a></li>
+    <li><a href="#missionen"><span class="n">07</span><span>Zwischenziele</span></a></li>
+    <li><a href="#raetsel"><span class="n">08</span><span>Rätsel und Hinweise</span></a></li>
+    <li><a href="#mittel"><span class="n">09</span><span>Einsatzmittel</span></a></li>
+    <li><a href="#zugriff"><span class="n">10</span><span>Sichtkontakt und Zugriff</span></a></li>
+    <li><a href="#finale"><span class="n">11</span><span>Finale und Sieg</span></a></li>
+    <li><a href="#pause"><span class="n">12</span><span>Pause und Eingriffe</span></a></li>
+    <li><a href="#daten"><span class="n">13</span><span>Was gespeichert wird</span></a></li>
+    <li><a href="#werte"><span class="n">14</span><span>Alle Regelwerte</span></a></li>
+  </ol>
+</nav>
+
+<main>
+
+<!-- ================================================================== -->
+<section id="spiel">
+  <h2><span class="n">01</span>Das Spiel</h2>
+  <p class="lead">Worum es geht, in fünf Sätzen.</p>
+
+  <p>
+    Eine <strong>Zielperson</strong> bewegt sich stundenlang durch eine Stadt und
+    arbeitet dabei Zwischenziele ab. Mehrere <strong>Fahndungsteams</strong> suchen
+    sie; sie sehen nicht, wo sie ist, sondern müssen es sich erarbeiten. Eine
+    <strong>Einsatzzentrale</strong> sieht alles und greift ein, wenn die Realität
+    dazwischenkommt. Gespielt wird zu Fuß und mit Bus und Bahn. Am Ende gewinnt,
+    wer entweder das Spiel entscheidet — Zugriff oder erreichtes Fluchtziel — oder
+    bei Ablauf der Zeit vorne liegt.
+  </p>
+
+  <div class="kasten merk">
+    <h4>Der Grundsatz hinter allem</h4>
+    <p>
+      Die Regeln rechnet der Server, nicht das Telefon. Jede Frist, jeder Abzug,
+      jede Unschärfe entsteht zentral. Das schließt Mogeln aus — und sorgt dafür,
+      dass ein Handy mit schlechtem Empfang niemanden benachteiligt: Gewertet wird
+      der Zeitpunkt der <em>Erfassung</em>, nicht der des Eingangs beim Server.
+      Eine Meldung aus dem Funkloch zählt mit ihrer eigenen Uhrzeit, sobald sie
+      durchkommt.
+    </p>
+  </div>
+</section>
+
+<!-- ================================================================== -->
+<section id="rollen">
+  <h2><span class="n">02</span>Die drei Rollen</h2>
+  <p class="lead">Wer was sieht — und was ausdrücklich nicht.</p>
+
+  <h3>Zielperson <span class="fuer x">Mister X</span></h3>
+  <p>
+    Bekommt Zwischenziele mit drei Varianten zur Wahl, muss an jedem den Nachweis
+    führen und sammelt dabei Punkte. Sieht die Fahndung nur unscharf: als Kreise
+    von <b class="w" data-regel="radar_blur_m">200</b> Metern Radius. Das ist keine
+    schlechte Ortung, sondern die Regel — der wahre Standort liegt irgendwo in
+    diesem Kreis, und zwar über eine Minute hinweg an derselben Stelle, damit sich
+    die Unschärfe nicht durch mehrfaches Nachsehen herausmitteln lässt.
+  </p>
+
+  <h3>Fahndungsteams <span class="fuer det">Detektive</span></h3>
+  <p>
+    Sehen einander genau, die Zielperson gar nicht. Alles, was sie über sie
+    erfahren, kommt aus Hinweisen — und Hinweise entstehen, indem Rätsel gelöst
+    oder Einsatzmittel bezahlt werden. Wer die Zielperson gefunden hat, meldet
+    Sichtkontakt und versucht den Zugriff.
+  </p>
+
+  <h3>Einsatzzentrale <span class="fuer hq">HQ</span></h3>
+  <p>
+    Sieht alles: echte Positionen, jede Buchung, welcher Hinweis gefälscht ist.
+    Prüft die Beweisfotos, hebt Sperren auf, korrigiert Punkte, legt Zugänge an,
+    schaltet Pausen. Jeder Eingriff landet mit Begründung im Protokoll.
+  </p>
+</section>
+
+<!-- ================================================================== -->
+<section id="ablauf">
+  <h2><span class="n">03</span>Ablauf eines Spiels</h2>
+  <p class="lead">Von der Vorbereitung bis zum Ergebnis.</p>
+
+  <ol class="schritte">
+    <li><div><strong>Spielfeld bauen.</strong> Die Zentrale schneidet die Stadt in
+      Sektoren (A, B, C …) und setzt zwanzig bis vierundzwanzig nummerierte
+      Hotspots. An jedem hängt ein Vor-Ort-Code, der dort angebracht wird.</div></li>
+    <li><div><strong>Zugänge verteilen.</strong> Jedes Team bekommt eine Teamkarte
+      mit Rufzeichen, Kennwort und QR-Code.</div></li>
+    <li><div><strong>Startpunkte auslosen.</strong> Jeder Hotspot wird höchstens
+      einmal gezogen, mit Mindestabstand — damit nicht Zielperson und Fahndung am
+      selben Ort anfangen. Die Zielperson zieht zuerst.</div></li>
+    <li><div><strong>Anreise.</strong> Während der Anreise läuft das Spiel noch
+      nicht; die Zentrale hält es an (siehe <a href="#pause">Pause</a>).</div></li>
+    <li><div><strong>Start.</strong> Ab hier laufen Spieluhr und Meldepflicht. Das
+      Spielende steht fest, verschiebt sich aber um jede Pause.</div></li>
+    <li><div><strong>Spiel.</strong> Die Zielperson arbeitet Zwischenziele ab, die
+      Fahndung löst Rätsel und verfolgt Hinweise.</div></li>
+    <li><div><strong>Finale.</strong> Nach dem letzten Zwischenziel wird der Bereich
+      um das geheime Fluchtziel offengelegt und zieht sich zusammen.</div></li>
+    <li><div><strong>Ende.</strong> Durch Zugriff, durch erreichtes Fluchtziel oder
+      durch Ablauf der Zeit.</div></li>
+  </ol>
+</section>
+
+<!-- ================================================================== -->
+<section id="melden">
+  <h2><span class="n">04</span>Meldepflicht</h2>
+  <p class="lead">Die Regel, die das ganze Spiel zusammenhält.</p>
+
+  <p>
+    Jedes Team außer der Zentrale meldet seinen Standort alle
+    <b class="w" data-regel="ping_interval_min">10</b> Minuten. Die App tut das von
+    selbst, solange die Erfassung eingeschaltet ist; im Browser und zur Sicherheit
+    gibt es den Knopf <em>Standort melden</em>. Mit jeder Meldung beginnt die Frist
+    von vorn.
+  </p>
+
+  <p>
+    Wer die Frist verstreichen lässt, bekommt einen Verstoß — und zwar
+    <em>je verpasstem Zeitraum einen</em>. Wer eine Stunde offline war, hat sechs,
+    nicht einen. Die Frist wandert dabei um volle Intervalle weiter, nicht auf
+    „jetzt“: Langes Wegbleiben verschenkt also keine Zeit.
+  </p>
+
+  <div class="tabelle">
+    <table>
+      <thead>
+        <tr><th>Verstoß</th><th>Folge</th><th>Warum</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="zahl">1.</td>
+          <td>Verwarnung, keine Punkte</td>
+          <td>Ein Funkloch ist kein Vergehen.</td>
+        </tr>
+        <tr>
+          <td class="zahl">2.</td>
+          <td class="neg"><b class="w" data-regel="ping_penalty_points">10</b> Punkte Abzug</td>
+          <td>Zweimal hintereinander ist kein Zufall mehr.</td>
+        </tr>
+        <tr>
+          <td class="zahl">ab 3.</td>
+          <td class="neg">
+            <b class="w" data-regel="ping_lockout_points">15</b> Punkte Abzug und
+            <b class="w" data-regel="ping_lockout_min">5</b> Minuten Standortsperre
+          </td>
+          <td>Wer dauerhaft nicht meldet, spielt nicht mit.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p>
+    Die Anzahl folgenloser Verwarnungen ist selbst ein Regelwert
+    (<span class="schluessel">ping_warn_at_violation</span>, voreingestellt
+    <b class="w" data-regel="ping_warn_at_violation">1</b>). Wird er erhöht, wandern
+    die beiden anderen Stufen entsprechend nach hinten.
+  </p>
+
+  <div class="kasten">
+    <h4>Standortsperre</h4>
+    <p>
+      Während einer Sperre ist das Team für die anderen unsichtbar und kann keine
+      Handlung ausführen. Die Zentrale kann sie im Regelpult vorzeitig aufheben —
+      etwa wenn der Grund ein abgestürztes Telefon war.
+    </p>
+  </div>
+</section>
+
+<!-- ================================================================== -->
+<section id="transit">
+  <h2><span class="n">05</span>Transit</h2>
+  <p class="lead">Für alle, die gerade in Bahn oder Bus sitzen.</p>
+
+  <p>
+    Wer den Transitmodus einschaltet, bekommt eine längere Meldefrist:
+    <b class="w" data-regel="ping_interval_transit_min">13</b> statt
+    <b class="w" data-regel="ping_interval_min">10</b> Minuten. Das ist kein
+    Vorteil, sondern ein Ausgleich — unter der Erde gibt es kein GPS und oft kein
+    Netz.
+  </p>
+
+  <p>
+    Der Transit hat einen zweiten Zweck: Die Zielperson gilt darin nicht als
+    stillstehend, auch wenn sich ihre Position kaum ändert. Wer ihn einschaltet,
+    ohne zu fahren, verschafft sich also keinen Vorteil beim Stillstand — die
+    Zentrale sieht den Modus, und Missbrauch fällt im Protokoll auf.
+  </p>
+</section>
+
+<!-- ================================================================== -->
+<section id="stillstand">
+  <h2><span class="n">06</span>Stillstand</h2>
+  <p class="lead">Gegen das Aussitzen — und nur dagegen.</p>
+
+  <p>
+    Ein Fahndungsteam, das sich an den Hauptbahnhof setzt und wartet, spielt
+    nicht. Eine Zielperson, die sich in einem Hinterhof verschanzt, auch nicht.
+    Dagegen richtet sich diese Regel — und sie ist eng gefasst, damit sie niemanden
+    trifft, der das Spiel ernsthaft spielt.
+  </p>
+
+  <div class="kasten merk">
+    <h4>Was als Stillstand zählt</h4>
+    <p>
+      <strong>Weder handeln noch bewegen.</strong> Beides zusammen. Wer zwanzig
+      Minuten quer durch die Stadt läuft, handelt nicht — steht aber auch nicht.
+      Wer an einem Ort steht und konzentriert ein Rätsel löst, bewegt sich nicht —
+      handelt aber. Erst wer beides unterlässt, wird belangt.
+    </p>
+  </div>
+
+  <p>
+    Als Bewegung gilt, wer einen Umkreis von
+    <b class="w" data-regel="camping_radius_m">75</b> Metern verlässt. Als Handlung
+    zählt: ein Rätsel lösen, ein Einsatzmittel benutzen, Sichtkontakt oder Zugriff
+    melden, ein Zwischenziel wählen, einen Nachweis einreichen, ausklinken oder
+    eine Verzögerung melden. Eine Standortmeldung zählt ausdrücklich
+    <em>nicht</em> — sie läuft automatisch und wäre damit ein Freibrief.
+  </p>
+
+  <div class="tabelle">
+    <table>
+      <thead>
+        <tr><th>Wer</th><th>Geduldsfaden</th><th>Folge je Zeitraum</th><th>Ausnahme</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Fahndungsteam</td>
+          <td class="zahl"><b class="w" data-regel="camping_detective_min">5</b> min</td>
+          <td class="zahl neg"><b class="w" data-regel="camping_detective_fp">1</b> FP</td>
+          <td>—</td>
+        </tr>
+        <tr>
+          <td>Zielperson</td>
+          <td class="zahl"><b class="w" data-regel="camping_misterx_min">20</b> min</td>
+          <td class="zahl neg"><b class="w" data-regel="camping_misterx_fp">1</b> FP</td>
+          <td>nicht während Mission oder Transit</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p>
+    Die Ausnahme für die Zielperson steht so im Regelwerk und hat einen Grund: Sie
+    arbeitet fast durchgehend an einem Zwischenziel und steht dabei zwangsläufig
+    herum — an der Kasse, am Bahnsteig, vor dem Hotspot. Ob sie vorankommt, misst
+    dort schon die Missionsfrist.
+  </p>
+
+  <p>
+    Die Folge wiederholt sich je Zeitraum, statt einmal hart zuzuschlagen. Die
+    Regel soll aufscheuchen, nicht erledigen.
+  </p>
+
+  <div class="kasten warn">
+    <h4>Hausregel, ab Werk aus</h4>
+    <p>
+      <span class="schluessel">camping_misterx_bonus</span> — Punkte für jedes
+      Fahndungsteam, wenn die Zielperson zu lange steht. Voreingestellt
+      <b class="w" data-regel="camping_misterx_bonus">0</b>, denn das Regelwerk
+      kennt keine solche Prämie: Es nennt nur den Verlust der Zielperson. Wer sie
+      will, stellt sie im Regelpult ein.
+    </p>
+  </div>
+</section>
+
+<!-- ================================================================== -->
+<section id="missionen">
+  <h2><span class="n">07</span>Zwischenziele <span class="fuer x">Mister X</span></h2>
+  <p class="lead">Die Aufgabe der Zielperson — und ihr einziger Weg zu Punkten.</p>
+
+  <p>
+    Die Zielperson bekommt fortlaufend Zwischenziele, jedes mit
+    <strong>drei Varianten zur Wahl</strong>. Sie unterscheiden sich nicht nur im
+    Text, sondern in Weg, Frist und Ertrag:
+  </p>
+
+  <div class="tabelle">
+    <table>
+      <thead>
+        <tr><th>Variante</th><th>Ziel</th><th>Frist</th><th>Ertrag</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Unauffällig</strong></td>
+          <td>größter Abstand zur bekannten Fahndungslage</td>
+          <td>volle Zeit</td>
+          <td class="zahl"><b class="w" data-regel="points_mission">15</b> Punkte</td>
+        </tr>
+        <tr>
+          <td><strong>Schnell und riskant</strong></td>
+          <td>das nächstgelegene Ziel</td>
+          <td>knapp</td>
+          <td class="zahl">20 Punkte</td>
+        </tr>
+        <tr>
+          <td><strong>Bonusauftrag</strong></td>
+          <td>der anspruchsvollste Weg</td>
+          <td>mittel</td>
+          <td class="zahl"><b class="w" data-regel="points_mission">15</b> Punkte + 1 FP</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p>
+    Die Ziele liegen zwischen 400 Metern und 3 Kilometern entfernt, am liebsten
+    bei 1,2 Kilometern. Die Frist rechnet der Server aus der Entfernung mit rund
+    65 Metern Gehweg je Minute, mal einem Zuschlag je nach Variante, mindestens
+    aber zehn Minuten und auf volle fünf gerundet.
+  </p>
+
+  <h3>Nachweis am Ziel</h3>
+  <p>
+    Am Ziel zählt eines von beidem: der <strong>Vor-Ort-Code</strong>, der dort
+    angebracht ist, oder ein <strong>Beweisfoto</strong>, das die Zentrale
+    freigibt. Beides gilt erst ab einem Abstand von höchstens
+    <b class="w" data-regel="hotspot_max_distance_m">150</b> Metern — die
+    Messungenauigkeit des Telefons wird dabei gutgeschrieben.
+  </p>
+
+  <h3>Wenn die Frist nicht reicht</h3>
+  <p>
+    Verstreicht sie, kostet das
+    <b class="w" data-regel="points_mission_failed">20</b> Punkte und
+    <b class="w" data-regel="mission_fail_lockout_min">10</b> Minuten Stillstand.
+    Davor stehen zwei Auswege:
+  </p>
+
+  <ul>
+    <li>
+      <strong>Kulanz.</strong> Steht die Zielperson beim Ablauf der Frist bereits
+      am Ziel, wird verlängert statt gerissen — in Schritten von
+      <b class="w" data-regel="mission_grace_min">10</b> Minuten, höchstens
+      <b class="w" data-regel="mission_grace_max_min">30</b> je Zwischenziel. Der
+      Grund: „Kauf zwei Tüten Gummibärchen“ dauert eine Minute oder zwölf, je
+      nachdem, wie viele Leute vor der Kasse stehen. Wer am Ziel ansteht, hat
+      alles richtig gemacht. Die Fahndung erfährt davon nichts.
+    </li>
+    <li>
+      <strong>Ausklinken.</strong> Das laufende Ziel abwählen und ein neues
+      anfordern, für <b class="w" data-regel="cost_reroute">2</b> Fluchtpunkte.
+      Siehe <a href="#mittel">Einsatzmittel</a>.
+    </li>
+  </ul>
+
+  <p>
+    Wie viele Zwischenziele ein Spiel hat, ergibt sich aus seiner Dauer: rund
+    35 Minuten je Ziel samt Weg, abzüglich einer Reserve fürs Finale, mindestens
+    drei und höchstens zwölf.
+  </p>
+</section>
+
+<!-- ================================================================== -->
+<section id="raetsel">
+  <h2><span class="n">08</span>Rätsel und Hinweise <span class="fuer det">Fahndung</span></h2>
+  <p class="lead">Wie die Fahndung erfährt, wo gesucht werden muss.</p>
+
+  <p>
+    Rätsel schreibt die Spielleitung; sie sind die Stelle, an der eure Stadt ins
+    Spiel kommt. Ein gelöstes Rätsel schaltet einen <strong>Hinweis</strong> frei —
+    und der wird nicht vorher ausgedacht, sondern in dem Moment aus der
+    <em>tatsächlichen Lage</em> abgeleitet. Wer schnell löst, bekommt eine frische
+    Spur; wer lange braucht, eine alte.
+  </p>
+
+  <div class="tabelle">
+    <table>
+      <thead><tr><th>Typ</th><th>Art</th><th>Was ihn ausmacht</th></tr></thead>
+      <tbody>
+        <tr><td class="zahl">A</td><td>Ausschluss</td><td>Mehrere Angaben schließen nach und nach alles bis auf einen Ort aus.</td></tr>
+        <tr><td class="zahl">B</td><td>Foto</td><td>Ein Bildausschnitt, der erkannt werden muss.</td></tr>
+        <tr><td class="zahl">C</td><td>Rechnung</td><td>Zahlen aus der Stadt, die zu einer Lösung führen.</td></tr>
+        <tr><td class="zahl">D</td><td>Geometrie</td><td>Richtungen, Abstände, Schnittpunkte auf der Karte.</td></tr>
+        <tr><td class="zahl">E</td><td>Vor Ort</td><td>Nur zu lösen, wenn jemand tatsächlich dort steht.</td></tr>
+        <tr><td class="zahl">F</td><td>Kombination</td><td>Setzt die Ergebnisse mehrerer anderer Rätsel zusammen.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p>
+    Ein richtig gelöstes Rätsel bringt
+    <b class="w" data-regel="points_puzzle">15</b> Punkte — oder nur
+    <b class="w" data-regel="points_puzzle_with_fp">8</b>, wenn der Hinweis mit
+    einem Fahndungspunkt freigekauft statt erarbeitet wurde.
+  </p>
+
+  <h3>Wie belastbar ein Hinweis ist</h3>
+  <div class="tabelle">
+    <table>
+      <thead><tr><th>Stufe</th><th>Bedeutung</th><th>Beispiel</th></tr></thead>
+      <tbody>
+        <tr><td style="color:var(--ok)">Grün</td><td>belastbar — es stimmt</td><td>„Zuletzt gesehen an Hotspot #07.“</td></tr>
+        <tr><td style="color:var(--warn)">Gelb</td><td>ungenau — stimmt im Kern</td><td>„Aufenthalt in Sektor C oder D.“</td></tr>
+        <tr><td style="color:var(--x)">Rot</td><td>vage — grenzt allenfalls ein</td><td>„Nutzt den Nahverkehr.“</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>Wie alt ein Hinweis ist</h3>
+  <p>
+    Bis <b class="w" data-regel="intel_hot_min">3</b> Minuten gilt eine Spur als
+    <strong>heiß</strong>, bis <b class="w" data-regel="intel_warm_min">15</b>
+    Minuten als <strong>lau</strong>, danach als <strong>kalt</strong>. Die
+    Hinweistafel zeigt das an — ein kalter Hinweis ist nicht falsch, nur alt.
+  </p>
+
+  <div class="kasten warn">
+    <h4>Nicht jeder Hinweis stimmt</h4>
+    <p>
+      Die Zielperson kann falsche Fährten einspeisen. Sie sind vom selben Bautyp
+      wie echte und an der Formulierung nicht zu erkennen. Im Protokoll der
+      Zentrale sind sie markiert — für die Fahndung nicht.
+    </p>
+  </div>
+</section>
+
+<!-- ================================================================== -->
+<section id="mittel">
+  <h2><span class="n">09</span>Einsatzmittel</h2>
+  <p class="lead">Elf Joker, bezahlt aus Flucht- beziehungsweise Fahndungspunkten.</p>
+
+  <p>
+    Zu Spielbeginn hat die Zielperson
+    <b class="w" data-regel="start_fp_misterx">5</b> Fluchtpunkte, jedes
+    Fahndungsteam <b class="w" data-regel="start_fp_detective">4</b>
+    Fahndungspunkte. Dazu kommen Punkte im Spiel — etwa ein Fluchtpunkt für jeden
+    erfüllten Bonusauftrag.
+  </p>
+
+  <h3>Zielperson <span class="fuer x">Mister X</span></h3>
+  <div class="tabelle">
+    <table>
+      <thead><tr><th>Mittel</th><th>Preis</th><th>Wirkt</th><th>Was es tut</th></tr></thead>
+      <tbody>
+        <tr>
+          <td>Ausklinken</td>
+          <td class="zahl"><b class="w" data-regel="cost_reroute">2</b> FP</td>
+          <td>sofort</td>
+          <td>Das laufende Zwischenziel abwählen und ein neues anfordern. Liegt im Missionsbuch, nicht im Kartendeck — es wirft ein bestimmtes Ziel weg.</td>
+        </tr>
+        <tr>
+          <td>Falsche Fährte</td>
+          <td class="zahl"><b class="w" data-regel="cost_false_trail">1</b> FP</td>
+          <td>sofort</td>
+          <td>Speist einen erfundenen gelben Hinweis ein. Höchstens zweimal je Spiel. Bringt selbst <b class="w" data-regel="points_false_trail">20</b> Punkte — das einzige Mittel, das etwas einbringt.</td>
+        </tr>
+        <tr>
+          <td>Phantom</td>
+          <td class="zahl"><b class="w" data-regel="cost_phantom">1</b> FP</td>
+          <td>sofort</td>
+          <td>Ein zweites Signal an anderer Stelle, als roter Hinweis.</td>
+        </tr>
+        <tr>
+          <td>Zeitverzögerung</td>
+          <td class="zahl"><b class="w" data-regel="cost_delay">2</b> FP</td>
+          <td>5 min</td>
+          <td>Neue Hinweise erreichen die Fahndung erst später.</td>
+        </tr>
+        <tr>
+          <td>Nebelkerze</td>
+          <td class="zahl"><b class="w" data-regel="cost_smoke">2</b> FP</td>
+          <td>15 min</td>
+          <td>Jede Ortung der Fahndung läuft ins Leere — auch eine, die in diesem Moment bezahlt wird.</td>
+        </tr>
+        <tr>
+          <td>U-Bahn-Geist</td>
+          <td class="zahl"><b class="w" data-regel="cost_ghost">3</b> FP</td>
+          <td>20 min</td>
+          <td>Die Meldepflicht ist ausgesetzt: vollständig vom Schirm.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>Fahndung <span class="fuer det">Detektive</span></h3>
+  <div class="tabelle">
+    <table>
+      <thead><tr><th>Mittel</th><th>Preis</th><th>Wirkt</th><th>Was es tut</th></tr></thead>
+      <tbody>
+        <tr>
+          <td>Ortung</td>
+          <td class="zahl"><b class="w" data-regel="cost_gps_ping">4</b> FP</td>
+          <td>60 s</td>
+          <td>Die Zielperson ist eine Minute lang offen sichtbar — ohne Unschärfe.</td>
+        </tr>
+        <tr>
+          <td>Sektorscan</td>
+          <td class="zahl"><b class="w" data-regel="cost_scan">1</b> FP</td>
+          <td>sofort</td>
+          <td>Beantwortet für einen Sektor: ja oder nein. Erhöht dafür kurzzeitig die Unschärfe auf <b class="w" data-regel="radar_blur_scan_m">300</b> Meter.</td>
+        </tr>
+        <tr>
+          <td>Sperrzone</td>
+          <td class="zahl"><b class="w" data-regel="cost_lockdown">3</b> FP</td>
+          <td>15 min</td>
+          <td>Belegt einen Sektor mit einer Falle. Betritt die Zielperson ihn, schlägt das System Alarm.</td>
+        </tr>
+        <tr>
+          <td>Wanze</td>
+          <td class="zahl"><b class="w" data-regel="cost_bug">2</b> FP</td>
+          <td>60 min</td>
+          <td>Überwacht einen Hotspot im Umkreis von 120 Metern.</td>
+        </tr>
+        <tr>
+          <td>Hinweis kaufen</td>
+          <td class="zahl"><b class="w" data-regel="cost_unlock">1</b> FP</td>
+          <td>sofort</td>
+          <td>Schaltet einen Hinweis frei, ohne das Rätsel zu lösen. Dafür gibt es beim späteren Lösen nur <b class="w" data-regel="points_puzzle_with_fp">8</b> statt <b class="w" data-regel="points_puzzle">15</b> Punkte.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="kasten">
+    <h4>Zwei Regeln für alle Einsatzmittel</h4>
+    <p>
+      <strong>Bezahlt wird zuerst.</strong> Eine Ortung gegen eine brennende
+      Nebelkerze kostet trotzdem — sonst wäre jede Ortung risikolos und die
+      Nebelkerze sinnlos. Immerhin weiß man danach, dass eine brennt.
+    </p>
+    <p>
+      <strong>Im Finale sind Täuschungsmanöver gesperrt.</strong> Ab dort gibt es
+      kein Versteckspiel mehr, nur noch Verfolgung.
+    </p>
+  </div>
+</section>
+
+<!-- ================================================================== -->
+<section id="zugriff">
+  <h2><span class="n">10</span>Sichtkontakt und Zugriff <span class="fuer det">Fahndung</span></h2>
+  <p class="lead">Wie man die Zielperson stellt.</p>
+
+  <h3>Sichtkontakt</h3>
+  <p>
+    Gilt, wenn ein Team höchstens
+    <b class="w" data-regel="sighting_max_distance_m">50</b> Meter entfernt ist und
+    diesen Abstand <b class="w" data-regel="sighting_dwell_sec">20</b> Sekunden
+    hält. Die Verweildauer verhindert, dass ein zufälliges Vorbeigehen zählt. Der
+    Alarm erreicht die Zielperson sofort — auch bei gesperrtem Bildschirm.
+  </p>
+
+  <h3>Zugriff in drei Stufen</h3>
+  <p>
+    Der Zugriff ist ein Formular, keine Berührung. Je höher die Stufe, desto mehr
+    muss stimmen — und desto mehr bringt sie ein.
+  </p>
+
+  <div class="tabelle">
+    <table>
+      <thead><tr><th>Stufe</th><th>Behauptung</th><th>Wenn richtig</th></tr></thead>
+      <tbody>
+        <tr>
+          <td class="zahl">1</td>
+          <td><strong>Lokalisierung.</strong> „Die Zielperson ist jetzt an Hotspot #07.“</td>
+          <td class="zahl"><b class="w" data-regel="points_arrest_level1">5</b> Punkte</td>
+        </tr>
+        <tr>
+          <td class="zahl">2</td>
+          <td><strong>Rekonstruktion.</strong> Zusätzlich: „… und war um 14:20 Uhr dort.“</td>
+          <td class="zahl"><b class="w" data-regel="points_arrest_level2">10</b> Punkte</td>
+        </tr>
+        <tr>
+          <td class="zahl">3</td>
+          <td><strong>Vollzugriff.</strong> Zusätzlich: „… und ihr nächstes Fluchtziel ist #14.“</td>
+          <td class="zahl">Spiel gewonnen</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p>
+    Geprüft wird gegen die Wahrheit im Server: der Standort auf
+    <b class="w" data-regel="hotspot_max_distance_m">150</b> Meter genau, die
+    Uhrzeit gegen die aufgezeichnete Spur, das Fluchtziel gegen die Hotspotnummer.
+  </p>
+
+  <div class="kasten warn">
+    <h4>Ein Fehlzugriff kostet</h4>
+    <p>
+      Stufe 3 daneben: <b class="w" data-regel="points_arrest_failed">15</b> Punkte
+      Abzug und <b class="w" data-regel="arrest_fail_lockout_min">10</b> Minuten
+      Sperre. Raten lohnt sich nicht.
+    </p>
+  </div>
+</section>
+
+<!-- ================================================================== -->
+<section id="finale">
+  <h2><span class="n">11</span>Finale und Sieg</h2>
+  <p class="lead">Wie ein Spiel endet.</p>
+
+  <p>
+    Sobald die Zielperson ihr letztes geplantes Zwischenziel abgeschlossen hat,
+    beginnt das <strong>Finale</strong>: Der Bereich um ihr geheimes Fluchtziel
+    wird offengelegt — zunächst 1500 Meter Radius — und schrumpft alle
+    <b class="w" data-regel="final_shrink_interval_min">5</b> Minuten um 250 Meter,
+    bis auf 250 Meter. Ab hier gibt es kein Versteckspiel mehr; Täuschungsmanöver
+    sind gesperrt.
+  </p>
+
+  <h3>Die drei Ausgänge</h3>
+  <ul>
+    <li><strong>Zugriff Stufe 3 gelingt</strong> → die Fahndung gewinnt.</li>
+    <li><strong>Die Zielperson erreicht ihr Fluchtziel</strong> → sie gewinnt.</li>
+    <li><strong>Die Spielzeit läuft ab</strong> → es gewinnt, wer mehr Punkte hat;
+      bei Gleichstand endet es unentschieden.</li>
+  </ul>
+
+  <p>
+    Wer das Spiel entscheidet, bekommt
+    <b class="w" data-regel="points_victory">150</b> Punkte.
+  </p>
+</section>
+
+<!-- ================================================================== -->
+<section id="pause">
+  <h2><span class="n">12</span>Pause und Eingriffe <span class="fuer hq">HQ</span></h2>
+  <p class="lead">Wenn die Realität dazwischenkommt.</p>
+
+  <h3>Pause</h3>
+  <p>
+    Die Zentrale hält das Spiel an — für die Anreise zu den Startpunkten, fürs
+    Mittagessen, für alles, was länger dauert. Während einer Pause wird
+    <strong>kein Standort aufgezeichnet</strong>: Der Server nimmt nichts an, was
+    in der Pause erfasst wurde, und die App hört auf zu orten. Beim Fortsetzen
+    wandern Spielende und die Frist des laufenden Zwischenziels um die Dauer der
+    Pause nach hinten — eine Unterbrechung darf niemandem angelastet werden.
+  </p>
+  <p>
+    Zur Pause gehört eine Ansage, die auf allen Geräten steht:
+    <em>„Pause — Mittagessen. Weiter gegen 16:02 Uhr.“</em> Eine Pause ohne Grund
+    ist für die, die draußen stehen, von einer Störung nicht zu unterscheiden.
+  </p>
+
+  <h3>Was die Zentrale sonst kann</h3>
+  <ul>
+    <li>Sperren vorzeitig aufheben.</li>
+    <li>Punkte korrigieren — mit Begründung, die im Protokoll steht.</li>
+    <li>Die Frist eines Zwischenziels verlängern.</li>
+    <li>Die Spieldauer ändern, auch mitten im Spiel.</li>
+    <li>Zugänge anlegen, wenn jemand dazustößt oder ein Telefon ausfällt.</li>
+    <li>Beweisfotos annehmen oder ablehnen.</li>
+  </ul>
+
+  <div class="kasten">
+    <h4>Jeder Eingriff steht im Protokoll</h4>
+    <p>
+      Die Zeitleiste beantwortet am Spieltag die häufigste Frage überhaupt:
+      „Warum habe ich minus fünfzehn?“ Jede Buchung nennt die Regel, die sie
+      ausgelöst hat.
+    </p>
+  </div>
+</section>
+
+<!-- ================================================================== -->
+<section id="daten">
+  <h2><span class="n">13</span>Was gespeichert wird</h2>
+  <p class="lead">Und was davon wieder verschwindet.</p>
+
+  <p>
+    Während des Spiels speichert der Server die Standorte aller Teams — anders
+    ließe sich keine dieser Regeln anwenden. Nach dem Spiel löscht sich die
+    <strong>Bewegungsspur von selbst</strong>: Positionen, Meldungen und
+    Sichtkontakte, voreingestellt 24 Stunden nach Spielende.
+  </p>
+
+  <p>
+    Was bleibt, ist das Spiel ohne Koordinaten: Punkte, Buchungen, der Ausgang.
+    Ein Protokoll, das niemanden mehr verrät, aber noch beantwortet, warum ein
+    Team am Ende zwanzig Punkte weniger hatte.
+  </p>
+
+  <p>
+    Auf den Geräten verfallen Zugangsdaten und Kartendaten ebenfalls von selbst.
+    Der Verkehr zwischen Gerät und Server ist zusätzlich zum Tunnel verschlüsselt;
+    das Kennzeichen auf der Teamkarte und auf dem Gerät muss übereinstimmen.
+  </p>
+</section>
+
+<!-- ================================================================== -->
+<section id="werte">
+  <h2><span class="n">14</span>Alle Regelwerte</h2>
+  <p class="lead">
+    Die vollständige Liste, wie sie auch im Regelpult steht. Jeder Wert lässt sich
+    dort ändern — vor dem Start und im Spiel.
+  </p>
+
+  <div class="tabelle">
+    <table>
+      <thead>
+        <tr><th>Regelwert</th><th>Voreinstellung</th><th>Wirkt auf</th><th>Schlüssel</th></tr>
+      </thead>
+      <tbody id="werteliste">
+        <!-- Reihenfolge wie im Regelverzeichnis (pkg/game/rules.go). -->
+        <tr><th colspan="4" style="padding-top:1.4rem">Meldepflicht</th></tr>
+        <tr><td>Meldeabstand</td><td class="zahl"><b class="w" data-regel="ping_interval_min">10</b> min</td><td>alle</td><td class="schluessel">ping_interval_min</td></tr>
+        <tr><td>Meldeabstand im Transit</td><td class="zahl"><b class="w" data-regel="ping_interval_transit_min">13</b> min</td><td>alle</td><td class="schluessel">ping_interval_transit_min</td></tr>
+        <tr><td>Verwarnungen vorab</td><td class="zahl"><b class="w" data-regel="ping_warn_at_violation">1</b></td><td>alle</td><td class="schluessel">ping_warn_at_violation</td></tr>
+        <tr><td>Abzug bei Verzug</td><td class="zahl neg"><b class="w" data-regel="ping_penalty_points">-10</b> Punkte</td><td>alle</td><td class="schluessel">ping_penalty_points</td></tr>
+        <tr><td>Sperre bei Wiederholung</td><td class="zahl"><b class="w" data-regel="ping_lockout_min">5</b> min</td><td>alle</td><td class="schluessel">ping_lockout_min</td></tr>
+        <tr><td>Zusatzabzug bei Sperre</td><td class="zahl neg"><b class="w" data-regel="ping_lockout_points">-15</b> Punkte</td><td>alle</td><td class="schluessel">ping_lockout_points</td></tr>
+        <tr><th colspan="4" style="padding-top:1.4rem">Stillstand</th></tr>
+        <tr><td>Geduldsfaden Fahndung</td><td class="zahl"><b class="w" data-regel="camping_detective_min">5</b> min</td><td>Fahndung</td><td class="schluessel">camping_detective_min</td></tr>
+        <tr><td>Preis fürs Stillsitzen</td><td class="zahl neg"><b class="w" data-regel="camping_detective_fp">-1</b> FP</td><td>Fahndung</td><td class="schluessel">camping_detective_fp</td></tr>
+        <tr><td>Geduldsfaden Zielperson</td><td class="zahl"><b class="w" data-regel="camping_misterx_min">20</b> min</td><td>Zielperson</td><td class="schluessel">camping_misterx_min</td></tr>
+        <tr><td>Preis fürs Verschanzen</td><td class="zahl neg"><b class="w" data-regel="camping_misterx_fp">-1</b> FP</td><td>Zielperson</td><td class="schluessel">camping_misterx_fp</td></tr>
+        <tr><td>Prämie für die Fahndung</td><td class="zahl"><b class="w" data-regel="camping_misterx_bonus">0</b> Punkte</td><td>alle</td><td class="schluessel">camping_misterx_bonus</td></tr>
+        <tr><td>Was als Bewegung zählt</td><td class="zahl"><b class="w" data-regel="camping_radius_m">75</b> m</td><td>alle</td><td class="schluessel">camping_radius_m</td></tr>
+        <tr><th colspan="4" style="padding-top:1.4rem">Missionen</th></tr>
+        <tr><td>Ziel erreicht</td><td class="zahl"><b class="w" data-regel="points_mission">15</b> Punkte</td><td>Zielperson</td><td class="schluessel">points_mission</td></tr>
+        <tr><td>Frist verstrichen</td><td class="zahl neg"><b class="w" data-regel="points_mission_failed">-20</b> Punkte</td><td>Zielperson</td><td class="schluessel">points_mission_failed</td></tr>
+        <tr><td>Kulanz je Schritt</td><td class="zahl"><b class="w" data-regel="mission_grace_min">10</b> min</td><td>Zielperson</td><td class="schluessel">mission_grace_min</td></tr>
+        <tr><td>Kulanz insgesamt</td><td class="zahl"><b class="w" data-regel="mission_grace_max_min">30</b> min</td><td>Zielperson</td><td class="schluessel">mission_grace_max_min</td></tr>
+        <tr><td>Sperre nach Fehlschlag</td><td class="zahl"><b class="w" data-regel="mission_fail_lockout_min">10</b> min</td><td>Zielperson</td><td class="schluessel">mission_fail_lockout_min</td></tr>
+        <tr><td>Nachweisabstand</td><td class="zahl"><b class="w" data-regel="hotspot_max_distance_m">150</b> m</td><td>alle</td><td class="schluessel">hotspot_max_distance_m</td></tr>
+        <tr><th colspan="4" style="padding-top:1.4rem">Rätsel und Hinweise</th></tr>
+        <tr><td>Rätsel gelöst</td><td class="zahl"><b class="w" data-regel="points_puzzle">15</b> Punkte</td><td>Fahndung</td><td class="schluessel">points_puzzle</td></tr>
+        <tr><td>Rätsel mit Hilfe gelöst</td><td class="zahl"><b class="w" data-regel="points_puzzle_with_fp">8</b> Punkte</td><td>Fahndung</td><td class="schluessel">points_puzzle_with_fp</td></tr>
+        <tr><td>Heiße Spur bis</td><td class="zahl"><b class="w" data-regel="intel_hot_min">3</b> min</td><td>alle</td><td class="schluessel">intel_hot_min</td></tr>
+        <tr><td>Laue Spur bis</td><td class="zahl"><b class="w" data-regel="intel_warm_min">15</b> min</td><td>alle</td><td class="schluessel">intel_warm_min</td></tr>
+        <tr><td>Falsche Fährte gelegt</td><td class="zahl"><b class="w" data-regel="points_false_trail">20</b> Punkte</td><td>Zielperson</td><td class="schluessel">points_false_trail</td></tr>
+        <tr><th colspan="4" style="padding-top:1.4rem">Einsatzmittel</th></tr>
+        <tr><td>Startguthaben Zielperson</td><td class="zahl"><b class="w" data-regel="start_fp_misterx">5</b> FP</td><td>Zielperson</td><td class="schluessel">start_fp_misterx</td></tr>
+        <tr><td>Startguthaben Fahndung</td><td class="zahl"><b class="w" data-regel="start_fp_detective">4</b> FP</td><td>Fahndung</td><td class="schluessel">start_fp_detective</td></tr>
+        <tr><td>Ausklinken</td><td class="zahl"><b class="w" data-regel="cost_reroute">2</b> FP</td><td>Zielperson</td><td class="schluessel">cost_reroute</td></tr>
+        <tr><td>Falsche Fährte</td><td class="zahl"><b class="w" data-regel="cost_false_trail">1</b> FP</td><td>Zielperson</td><td class="schluessel">cost_false_trail</td></tr>
+        <tr><td>Zustellverzug</td><td class="zahl"><b class="w" data-regel="cost_delay">2</b> FP</td><td>Zielperson</td><td class="schluessel">cost_delay</td></tr>
+        <tr><td>Phantom</td><td class="zahl"><b class="w" data-regel="cost_phantom">1</b> FP</td><td>Zielperson</td><td class="schluessel">cost_phantom</td></tr>
+        <tr><td>Nebelkerze</td><td class="zahl"><b class="w" data-regel="cost_smoke">2</b> FP</td><td>Zielperson</td><td class="schluessel">cost_smoke</td></tr>
+        <tr><td>U-Bahn-Geist</td><td class="zahl"><b class="w" data-regel="cost_ghost">3</b> FP</td><td>Zielperson</td><td class="schluessel">cost_ghost</td></tr>
+        <tr><td>Ortung</td><td class="zahl"><b class="w" data-regel="cost_gps_ping">4</b> FP</td><td>Fahndung</td><td class="schluessel">cost_gps_ping</td></tr>
+        <tr><td>Sperrzone</td><td class="zahl"><b class="w" data-regel="cost_lockdown">3</b> FP</td><td>Fahndung</td><td class="schluessel">cost_lockdown</td></tr>
+        <tr><td>Wanze</td><td class="zahl"><b class="w" data-regel="cost_bug">2</b> FP</td><td>Fahndung</td><td class="schluessel">cost_bug</td></tr>
+        <tr><td>Sektorscan</td><td class="zahl"><b class="w" data-regel="cost_scan">1</b> FP</td><td>Fahndung</td><td class="schluessel">cost_scan</td></tr>
+        <tr><td>Hinweis kaufen</td><td class="zahl"><b class="w" data-regel="cost_unlock">1</b> FP</td><td>Fahndung</td><td class="schluessel">cost_unlock</td></tr>
+        <tr><th colspan="4" style="padding-top:1.4rem">Zugriff und Sieg</th></tr>
+        <tr><td>Sichtweite</td><td class="zahl"><b class="w" data-regel="sighting_max_distance_m">50</b> m</td><td>Fahndung</td><td class="schluessel">sighting_max_distance_m</td></tr>
+        <tr><td>Verweildauer</td><td class="zahl"><b class="w" data-regel="sighting_dwell_sec">20</b> Sek.</td><td>Fahndung</td><td class="schluessel">sighting_dwell_sec</td></tr>
+        <tr><td>Zugriff Stufe 1 (Lokalisierung)</td><td class="zahl"><b class="w" data-regel="points_arrest_level1">5</b> Punkte</td><td>Fahndung</td><td class="schluessel">points_arrest_level1</td></tr>
+        <tr><td>Zugriff Stufe 2 (Rekonstruktion)</td><td class="zahl"><b class="w" data-regel="points_arrest_level2">10</b> Punkte</td><td>Fahndung</td><td class="schluessel">points_arrest_level2</td></tr>
+        <tr><td>Fehlzugriff</td><td class="zahl neg"><b class="w" data-regel="points_arrest_failed">-15</b> Punkte</td><td>Fahndung</td><td class="schluessel">points_arrest_failed</td></tr>
+        <tr><td>Sperre nach Fehlzugriff</td><td class="zahl"><b class="w" data-regel="arrest_fail_lockout_min">10</b> min</td><td>Fahndung</td><td class="schluessel">arrest_fail_lockout_min</td></tr>
+        <tr><td>Sieg</td><td class="zahl"><b class="w" data-regel="points_victory">150</b> Punkte</td><td>alle</td><td class="schluessel">points_victory</td></tr>
+        <tr><td>Enger werdender Suchbereich</td><td class="zahl"><b class="w" data-regel="final_shrink_interval_min">5</b> min</td><td>alle</td><td class="schluessel">final_shrink_interval_min</td></tr>
+        <tr><th colspan="4" style="padding-top:1.4rem">Abstände</th></tr>
+        <tr><td>Unschärfe</td><td class="zahl"><b class="w" data-regel="radar_blur_m">200</b> m</td><td>alle</td><td class="schluessel">radar_blur_m</td></tr>
+        <tr><td>Unschärfe beim Scan</td><td class="zahl"><b class="w" data-regel="radar_blur_scan_m">300</b> m</td><td>alle</td><td class="schluessel">radar_blur_scan_m</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  <div>
+    Operation X — Regelwerk v3.2, wie der Server es anwendet.
+    Alle Zahlen sind Voreinstellungen; was in eurem Spiel gilt, steht unter
+    „Regeln“ in der Kopfleiste. Kartendaten von OpenStreetMap-Mitwirkenden.
+  </div>
+</footer>
+
+</body>
+</html>

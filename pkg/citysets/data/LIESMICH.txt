@@ -1,0 +1,23 @@
+Die Stadtpakete in diesem Ordner entstehen mit tools/citysets aus echten
+OpenStreetMap-Daten:
+
+    go run ./tools/citysets Dresden Leipzig "Frankfurt am Main"
+
+Der Aufruf braucht Internet und dauert wegen der Höflichkeitspausen gegenüber
+den Diensten von OpenStreetMap einige Minuten je Stadt. Das Ergebnis liegt als
+JSON daneben und wird in die Binary eingebettet – zur Laufzeit fragt niemand
+mehr irgendwo nach.
+
+Diese Datei sorgt zugleich dafür, dass sich das Programm auch dann übersetzen
+lässt, wenn noch kein einziges Paket erzeugt wurde.
+
+Warum hier nur wenige Städte liegen:
+
+Die Daten kommen von Overpass, einem kostenlos betriebenen Dienst. Mehrere
+Städte hintereinander abzufragen läuft in eine Sperre – das ist richtig so, und
+der Weg daran vorbei wäre, ihn schlechter zu behandeln als er es verdient. Wer
+sein Paket braucht, ruft das Werkzeug für seine Stadt auf und lässt ihm Zeit;
+notfalls am nächsten Tag noch einmal.
+
+Ohne Paket geht die Einrichtung wie bisher von Hand: Stadt suchen, Ebene
+wählen, Sektoren anklicken, Hotspots setzen.
