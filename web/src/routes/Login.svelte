@@ -163,10 +163,14 @@
     <div class="head">
       <span class="stamp">Zugang beschränkt</span>
       <h1>Operation X</h1>
-      {#if status?.ready}
+      {#if status?.gameName}
         <p class="mission mono">
-          {status.gameName} · {status.city}
+          {status.gameName}{status.city ? ` · ${status.city}` : ''}
         </p>
+      {:else if status?.ready}
+        <!-- Der Server läuft, nennt aber kein Spiel. Das ist kein Fehler:
+             Wer hier steht, hat noch nichts vorgewiesen. -->
+        <p class="mission mono">Rufzeichen von der Teamkarte</p>
       {:else if statusError}
         <p class="mission mono offline">Kein Kontakt zum Einsatzserver</p>
       {:else}
@@ -244,8 +248,11 @@
 <style>
   .screen {
     flex: 1;
-    display: grid;
-    place-items: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
     padding: 1.5rem;
     position: relative;
     z-index: 1;
