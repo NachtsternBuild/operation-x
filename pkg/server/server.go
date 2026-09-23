@@ -12,6 +12,7 @@ import (
 	"fmt"
 	"io/fs"
 	"log"
+	"net/http"
 	"strings"
 
 	"github.com/pocketbase/pocketbase"
@@ -121,7 +122,14 @@ func Neu(o Optionen) *pocketbase.PocketBase {
 		if oberflaeche == nil {
 			oberflaeche = web.DistFS()
 		}
-		se.Router.GET("/{path...}", apis.Static(oberflaeche, true))
+		if _, err := fs.Stat(oberflaeche, "index.html"); err != nil {
+			// Die Oberfläche wurde nie gebaut. Das passiert genau einmal: beim
+			// ersten Start nach einem frischen Klon. Eine weiße Seite wäre
+			// dafür die schlechteste Antwort.
+			se.Router.GET("/{path...}", hinweisOhneOberflaeche)
+		} else {
+			se.Router.GET("/{path...}", apis.Static(oberflaeche, true))
+		}
 
 		// PocketBase öffnet beim ersten Start von sich aus einen Browser – auf
 		// seiner eigenen Datenbankverwaltung, mit der Aufforderung, dort ein
@@ -219,4 +227,27 @@ func Neu(o Optionen) *pocketbase.PocketBase {
 	app.RootCmd.AddCommand(districtsCmd)
 
 	return app
+}
+
+// hinweisOhneOberflaeche erklärt, was fehlt, statt eine leere Seite zu zeigen.
+func hinweisOhneOberflaeche(e *core.RequestEvent) error {
+	return e.HTML(http.StatusServiceUnavailable, `<!doctype html>
+<html lang="de"><head><meta charset="utf-8">
+<title>Operation X — Oberfläche fehlt</title>
+<style>
+ body{background:#0b1215;color:#e8e6e1;font-family:system-ui,sans-serif;
+      line-height:1.6;margin:0;display:grid;place-items:center;min-height:100vh}
+ div{max-width:34rem;padding:2rem}
+ h1{font-size:1.4rem;margin:0 0 .6rem}
+ code{background:#1b2429;border:1px solid #2a3639;border-radius:3px;
+      padding:.1em .4em;font-size:.9em}
+ p{color:#9aa5a8}
+</style></head><body><div>
+<h1>Die Oberfläche wurde noch nicht gebaut.</h1>
+<p>Der Server läuft, aber es gibt nichts anzuzeigen. Die Oberfläche wird in die
+Programmdatei eingebettet und muss einmal gebaut werden:</p>
+<p><code>cd web &amp;&amp; npm install &amp;&amp; npm run build</code></p>
+<p>Danach den Server neu übersetzen und starten. Der beiliegende
+<code>./bauen.sh</code> erledigt beides in einem Zug.</p>
+</div></body></html>`)
 }

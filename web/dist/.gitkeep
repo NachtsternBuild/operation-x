@@ -1,0 +1,7 @@
+Dieser Ordner nimmt die gebaute Oberfläche auf (npm run build).
+
+Er liegt leer im Verlauf, weil die Go-Einbettung ihn braucht: Ohne ein
+Verzeichnis namens dist übersetzt schon "go build" nicht – auch dann nicht,
+wenn dieses Programm nur als Bibliothek eingebunden wird.
+
+Alles andere hier ist ein Bauergebnis und gehört nicht in die Versionsverwaltung.

@@ -42,10 +42,11 @@ cd web && npm install && npm run build && cd ..
 go build -o operationx ./cmd/operationx
 ```
 
-Die erste Zeile ist keine Kür: Die Oberfläche wird in die Binary eingebettet,
-und ohne sie bricht der Go-Build mit `pattern all:dist: no matching files
-found` ab. `web/dist` liegt bewusst nicht im Verlauf — es ist ein Bauergebnis,
-kein Quelltext.
+Die erste Zeile ist keine Kür: Die Oberfläche wird in die Binary eingebettet.
+Wer sie überspringt, bekommt einen Server, der läuft und eine Seite zeigt, auf
+der steht, was fehlt. `web/dist` liegt bewusst nicht im Verlauf — es ist ein
+Bauergebnis, kein Quelltext. Nur der Platzhalter `web/dist/.gitkeep` liegt
+dort, weil die Go-Einbettung ein Verzeichnis braucht.
 
 Beim ersten Start ist die Datenbank leer. Die Anmeldeseite zeigt dann die
 Ersteinrichtung: Name und Stadt des Spiels, Kennwort für die Einsatzzentrale.
@@ -76,8 +77,8 @@ getrennt mit Live-Reload, der Vite-Server leitet `/api` an den Spielserver weite
 cd web && npm install && npm run dev        # Terminal 2, öffnet Port 5173
 ```
 
-Vor jedem Go-Build muss die Oberfläche gebaut sein: Beim ersten Mal scheitert
-er sonst, danach landet ein veralteter Stand in der Binary.
+Vor jedem Go-Build muss die Oberfläche gebaut sein, sonst landet ein
+veralteter Stand in der Binary — oder beim ersten Mal gar keiner.
 
 ```bash
 cd web && npm run build && cd .. && go build -o operationx ./cmd/operationx

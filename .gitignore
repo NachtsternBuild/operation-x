@@ -2,7 +2,8 @@
 /pb_data/
 
 # Gebaute Oberfläche und Abhängigkeiten
-/web/dist/
+/web/dist/*
+!/web/dist/.gitkeep
 /web/node_modules/
 
 # Kompilierte Binaries

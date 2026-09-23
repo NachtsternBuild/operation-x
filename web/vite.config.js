@@ -31,6 +31,11 @@ function maplibreArbeiter() {
       for (const datei of ['maplibre-gl-worker.mjs', 'maplibre-gl-shared.mjs']) {
         copyFileSync(join(dir, datei), join('dist/assets', datei))
       }
+
+      // Der Platzhalter, den die Go-Einbettung braucht. Vite raeumt dist vor
+      // jedem Bauen leer; ohne diese Zeile waere er nach dem ersten Bauen weg
+      // und "go build" schluege in einem frischen Klon fehl.
+      copyFileSync(new URL('./dist-platzhalter.txt', import.meta.url), 'dist/.gitkeep')
     },
   }
 }
