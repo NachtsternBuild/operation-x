@@ -12,6 +12,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import de.operationx.app.UiState
+import de.operationx.app.data.BekannterServer
 
 /**
  * Beitritt.
@@ -89,11 +90,52 @@ fun JoinScreen(state: UiState, onCheck: (String) -> Unit, onScan: () -> Unit) {
             )
         }
 
+        // Server, auf denen dieses Geraet schon gespielt hat.
+        //
+        // Nicht nur Bequemlichkeit: Daneben steht das Kennzeichen, mit dem
+        // sich der Server damals gemeldet hat. Wer es hier wiedererkennt,
+        // weiss vor dem Antippen, dass er zum selben zurueckkehrt.
+        if (state.bekannteServer.isNotEmpty()) {
+            Spacer(Modifier.height(28.dp))
+            Text(
+                "SCHON EINMAL VERBUNDEN",
+                style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            Spacer(Modifier.height(4.dp))
+
+            state.bekannteServer.forEach { bekannt ->
+                BekannterServerZeile(bekannt) {
+                    url = bekannt.adresse
+                    onCheck(bekannt.adresse)
+                }
+            }
+        }
+
         Spacer(Modifier.height(28.dp))
         Text(
             "Zugangsdaten und Kartendaten verfallen nach dem Spiel automatisch.",
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
+    }
+}
+
+/** Eine Zeile der Merkliste: Adresse links, Kennzeichen rechts. */
+@Composable
+private fun BekannterServerZeile(server: BekannterServer, onClick: () -> Unit) {
+    TextButton(onClick = onClick, modifier = Modifier.fillMaxWidth()) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text(server.adresse, style = MaterialTheme.typography.bodyMedium)
+            Text(
+                "\uD83D\uDD12 " + server.kennzeichen.take(4),
+                style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
     }
 }

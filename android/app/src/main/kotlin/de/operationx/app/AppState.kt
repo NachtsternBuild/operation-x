@@ -97,7 +97,11 @@ class AppState(app: Application) : AndroidViewModel(app) {
         val wantsTracking = session.trackingWanted.first()
 
         if (server.isBlank()) {
-            _ui.value = _ui.value.copy(stage = Stage.JOIN, fieldMode = fieldMode)
+            _ui.value = _ui.value.copy(
+                stage = Stage.JOIN,
+                fieldMode = fieldMode,
+                bekannteServer = session.bekannteServer(),
+            )
             return
         }
 
@@ -349,13 +353,22 @@ class AppState(app: Application) : AndroidViewModel(app) {
         checkServer(session.currentServer())
     }
 
+    /** Zurück zur Serverauswahl. Die Merkliste der Server bleibt. */
+    fun serverWechseln() = viewModelScope.launch {
+        session.serverWechseln()
+        liveStream.reset()
+        // Anderer Server, anderer Schlüssel.
+        api.funkZuruecksetzen()
+        _ui.value = UiState(stage = Stage.JOIN, bekannteServer = session.bekannteServer())
+    }
+
     /** Löscht Zugang, Puffer und Serverprofil – der Knopf aus den Einstellungen. */
     fun wipe() = viewModelScope.launch {
         session.wipe()
         liveStream.reset()
         // Anderer Server, anderer Schlüssel.
         api.funkZuruecksetzen()
-        _ui.value = UiState(stage = Stage.JOIN)
+        _ui.value = UiState(stage = Stage.JOIN, bekannteServer = session.bekannteServer())
     }
 
     fun refresh() = viewModelScope.launch {

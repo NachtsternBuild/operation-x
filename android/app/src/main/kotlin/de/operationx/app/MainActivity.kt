@@ -215,7 +215,7 @@ class MainActivity : ComponentActivity() {
             Stage.LOGIN -> LoginScreen(
                 state = state,
                 onLogin = { c, p -> model.login(c, p) },
-                onBack = { model.wipe() },
+                onBack = { model.serverWechseln() },
             )
 
             Stage.ONBOARDING -> OnboardingScreen(

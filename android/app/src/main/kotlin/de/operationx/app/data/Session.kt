@@ -93,6 +93,22 @@ class Session(private val context: Context) {
         }
     }
 
+    /**
+     * Zurück zur Serverauswahl, ohne das Gedächtnis zu leeren.
+     *
+     * Der Unterschied zu wipe() ist die Merkliste der Server: Sie ist der
+     * einzige Grund, warum die App merkt, wenn ein Server unter derselben
+     * Adresse plötzlich ein anderes Kennzeichen hat. Sie ausgerechnet beim
+     * Serverwechsel zu löschen hiesse, die Warnung genau dann wegzuwerfen,
+     * wenn sie gebraucht wird – und die Liste wäre auf der Beitrittsseite
+     * immer leer.
+     */
+    suspend fun serverWechseln() {
+        clearCredentials()
+        context.dataStore.edit { it.remove(Keys.serverUrl) }
+        PositionBuffer(context).clear()
+    }
+
     /** Löscht alles, was zum Spiel gehört – der „Jetzt alles löschen“-Knopf. */
     suspend fun wipe() {
         context.dataStore.edit { it.clear() }
