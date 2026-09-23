@@ -5,10 +5,11 @@ import { INFO, ableiten, b64, beiwerk, salz, schluessel, unb64 } from './funk-ke
 /*
  * Rechnet den gemeinsamen Prüfvektor nach.
  *
- * Dieselbe Datei prüfen der Server (internal/crypt/vektor_test.go) und die
- * Android-App (FunkVektorTest.kt). Ergibt eine der drei Sprachen etwas
- * anderes, reden Server und Gerät aneinander vorbei — lautlos, weil eine
- * misslungene Entschlüsselung aussieht wie eine leere Antwort.
+ * Dieselbe Datei prüfen der Server (pkg/crypt/vektor_test.go), die Android-App
+ * (FunkVektorTest.kt) und die iOS-Fassung (ios/Funkprobe). Ergibt eine der
+ * vier Sprachen etwas anderes, reden Server und Gerät aneinander vorbei —
+ * lautlos, weil eine misslungene Entschlüsselung aussieht wie eine leere
+ * Antwort.
  */
 
 const vektor = JSON.parse(readFileSync(new URL('../../../testdaten/lagefunk.json', import.meta.url)))

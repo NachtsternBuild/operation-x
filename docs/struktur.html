@@ -729,8 +729,8 @@
     Dieselben Bildschirme, dieselben Texte, MapKit statt MapLibre, kein eigener
     QR-Scanner (die Kamera-App kann das). Fragt alle zehn Sekunden nach, statt
     zuzuhören. Übersetzt ist bisher nur, was ohne Apple-SDK geht — die
-    Verschlüsselung allerdings vollständig, gegen einen echten Server:
-    <code>ios/Funkprobe/pruefen.sh</code>.
+    Verschlüsselung allerdings vollständig: gegen den gemeinsamen Prüfvektor
+    und gegen einen echten Server (<code>ios/Funkprobe/pruefen.sh</code>).
   </p>
 
   <div class="merke">
@@ -812,12 +812,12 @@ cd ios/Funkprobe &amp;&amp; ./pruefen.sh   <i>iOS-Verschlüsselung gegen echten 
       Test vergleicht 98 Zahlen mit den Voreinstellungen im Code.</li>
     <li><b>Die Sichtbarkeit stimmt.</b> Was ein Fahndungsteam von der
       Zielperson sieht, ist ein Unschärfekreis — geprüft, nicht behauptet.</li>
-    <li><b>Die Verschlüsselung passt zwischen den Sprachen.</b> Go, Kotlin und
-      JavaScript rechnen denselben Prüfvektor nach
+    <li><b>Die Verschlüsselung passt zwischen den Sprachen.</b> Alle vier
+      rechnen denselben Prüfvektor nach
       (<code>testdaten/lagefunk.json</code>): dieselbe Ableitung, dasselbe
       Beiwerk samt Abfrageteil, dieselben Bytes. Der Prüfstand in
-      <code>ios/Funkprobe</code> redet zusätzlich mit einem laufenden
-      Server.</li>
+      <code>ios/Funkprobe</code> tut das für Swift und redet zusätzlich mit
+      einem laufenden Server.</li>
     <li><b>Die Bewegungsspur verschwindet wirklich.</b> Ein Test legt ein
       Spiel mit Positionen, Beweisfoto und Sperre an, lässt die Frist ablaufen
       und sieht nach, was übrig ist.</li>

@@ -41,6 +41,89 @@ func hole(_ pfad: String, funk: Funk?) async -> (Int, Data)? {
     return (http.statusCode, klar)
 }
 
+// ---------------------------------------------------------------------------
+// Teil 1: der gemeinsame Prüfvektor. Ohne Server, ohne Netz.
+//
+// Dieselben Zahlen rechnen Go (pkg/crypt/vektor_test.go), Kotlin
+// (FunkVektorTest.kt) und die Weboberfläche (funk-kern.test.js) nach. Ergibt
+// eine der vier Sprachen etwas anderes, reden Server und Gerät am Spieltag
+// aneinander vorbei — und zwar lautlos, weil eine misslungene Entschlüsselung
+// aussieht wie eine leere Antwort.
+// ---------------------------------------------------------------------------
+
+func hex(_ text: String) -> Data {
+    var roh = Data()
+    var i = text.startIndex
+    while i < text.endIndex {
+        let j = text.index(i, offsetBy: 2)
+        roh.append(UInt8(text[i..<j], radix: 16) ?? 0)
+        i = j
+    }
+    return roh
+}
+
+func hexVon(_ roh: Data) -> String {
+    roh.map { String(format: "%02x", $0) }.joined()
+}
+
+print("Prüfvektor — testdaten/lagefunk.json")
+
+let vektorPfad = URL(fileURLWithPath: #filePath)
+    .deletingLastPathComponent()   // Sources/Funkprobe
+    .deletingLastPathComponent()   // Sources
+    .deletingLastPathComponent()   // Funkprobe
+    .deletingLastPathComponent()   // ios
+    .deletingLastPathComponent()   // Wurzel des Projekts
+    .appendingPathComponent("testdaten/lagefunk.json")
+
+guard let vektorRoh = try? Data(contentsOf: vektorPfad),
+      let vektor = try? JSONSerialization.jsonObject(with: vektorRoh) as? [String: String]
+else {
+    print("  FEHL Prüfvektor nicht lesbar: \(vektorPfad.path)")
+    exit(1)
+}
+
+func feld(_ name: String) -> String { vektor[name] ?? "" }
+
+// Die Ableitung: dieselben Bytes wie im Server?
+let abgeleitet = Funk.ableiten(
+    gemeinsam: hex(feld("gemeinsamesGeheimnisHex")),
+    eigenB64: feld("clientPublicKey"),
+    serverB64: feld("serverPublicKey")
+)
+let abgeleitetHex = abgeleitet.withUnsafeBytes { hexVon(Data($0)) }
+pruefe("Schlüsselableitung (HKDF)", abgeleitetHex == feld("schluesselHex"),
+       "\n       war: \(feld("schluesselHex"))\n       ist: \(abgeleitetHex)")
+
+// Und die Nachricht aus dem Vektor muss aufgehen.
+let ausVektor = Funk(schluessel: abgeleitet,
+                     publicKey: feld("clientPublicKey"),
+                     fingerprint: "PRUEF-VEKTOR")
+
+if let klar = ausVektor.oeffnen(hex(feld("chiffreHex")),
+                                nonce: hex(feld("nonceHex")),
+                                beiwerk: Data(feld("beiwerk").utf8)) {
+    pruefe("Nachricht des Servers geöffnet",
+           String(data: klar, encoding: .utf8) == feld("klartext"))
+} else {
+    pruefe("Nachricht des Servers geöffnet", false, "sie ließ sich nicht öffnen")
+}
+
+pruefe("Falsches Beiwerk öffnet nicht",
+       ausVektor.oeffnen(hex(feld("chiffreHex")),
+                         nonce: hex(feld("nonceHex")),
+                         beiwerk: Data("GET /woanders 7".utf8)) == nil)
+
+pruefe("Beiwerk hat die Form des Servers",
+       String(data: Funk.beiwerk(methode: "POST",
+                                 pfad: "/api/opx/position?seit=3",
+                                 nummer: 7), encoding: .utf8) == feld("beiwerk"))
+
+// ---------------------------------------------------------------------------
+// Teil 2: gegen einen laufenden Server. Nur, wenn einer antwortet.
+// ---------------------------------------------------------------------------
+
+print("")
 print("Prüfstand Lagefunk — \(basis)")
 
 // 1. Der Schlüssel des Servers.
@@ -48,8 +131,11 @@ guard let (_, keyRoh) = await hole("/api/opx/key", funk: nil),
       let schluesselInfo = try? JSONSerialization.jsonObject(with: keyRoh) as? [String: Any],
       let serverKey = schluesselInfo["publicKey"] as? String,
       let kennzeichen = schluesselInfo["fingerprint"] as? String else {
-    print("  FEHL Server nicht erreichbar oder ohne Verschlüsselung")
-    exit(1)
+    // Kein Server, kein Beinbruch: Der Vektor oben ist der Teil, der ohne
+    // Aufbau auskommt, und er ist gelaufen.
+    print("  (kein Server erreichbar — der Teil mit dem Handschlag entfällt)")
+    print(fehler == 0 ? "\nAlles durch, was ohne Server geht." : "\n\(fehler) Fehler.")
+    exit(fehler == 0 ? 0 : 1)
 }
 print("  Kennzeichen des Servers: \(kennzeichen)")
 

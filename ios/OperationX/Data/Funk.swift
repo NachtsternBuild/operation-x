@@ -16,8 +16,12 @@ import CryptoKit
 /// geht.
 ///
 /// Verfahren: ECDH auf P-256, daraus per HKDF-SHA256 ein Sitzungsschlüssel,
-/// damit AES-256-GCM. Dasselbe steht in Go (internal/crypt), im Browser
-/// (web/src/lib/funk.svelte.js) und in Kotlin (data/Funk.kt) noch einmal.
+/// damit AES-256-GCM. Dasselbe steht in Go (pkg/crypt), im Browser
+/// (web/src/lib/funk-kern.js) und in Kotlin (data/Funk.kt) noch einmal.
+///
+/// Dass die vier übereinstimmen, prüft ein gemeinsamer Vektor in
+/// testdaten/lagefunk.json — feste Eingaben, feste Ausgaben. Für diese
+/// Fassung tut das ios/Funkprobe.
 ///
 /// Drei Einzelheiten müssen dabei auf allen vier Seiten übereinstimmen, sonst
 /// scheitert die Entschlüsselung lautlos:
@@ -40,7 +44,10 @@ final class Funk {
     private var nummer: Int64 = 0
     private let sperre = NSLock()
 
-    private init(schluessel: SymmetricKey, publicKey: String, fingerprint: String) {
+    // Modulintern statt privat: Der Prüfstand baut damit eine Verschlüsselung
+    // aus einem festen Schlüssel und rechnet nach, ob dieselben Bytes
+    // herauskommen wie im Server. Von außen bleibt nur aufbauen() erreichbar.
+    init(schluessel: SymmetricKey, publicKey: String, fingerprint: String) {
         self.schluessel = schluessel
         self.publicKey = publicKey
         self.fingerprint = fingerprint
@@ -64,18 +71,31 @@ final class Funk {
         guard let gemeinsam = try? eigen.sharedSecretFromKeyAgreement(with: fremd)
         else { return nil }
 
-        // Das Salz bindet den Schlüssel an genau dieses Paar. Reihenfolge und
-        // Trennzeichen stehen so auch im Server.
-        let salz = Data("\(eigenB64)|\(serverPublicKey)".utf8)
-
-        let key = gemeinsam.hkdfDerivedSymmetricKey(
-            using: SHA256.self,
-            salt: salz,
-            sharedInfo: Data(info.utf8),
-            outputByteCount: 32
+        let key = ableiten(
+            gemeinsam: gemeinsam.withUnsafeBytes { Data($0) },
+            eigenB64: eigenB64,
+            serverB64: serverPublicKey
         )
 
         return Funk(schluessel: key, publicKey: eigenB64, fingerprint: fingerprint)
+    }
+
+    /// Leitet den Sitzungsschlüssel aus dem gemeinsamen Geheimnis ab.
+    ///
+    /// Ein eigener Schritt, obwohl er nur einmal gerufen wird: Der Prüfvektor
+    /// steigt genau hier ein. Wäre die Rechnung in aufbauen() eingebacken,
+    /// müsste er sie nachbilden — und prüfte dann eine gleichwertige Rechnung
+    /// statt dieser.
+    ///
+    /// Das Salz bindet den Schlüssel an genau dieses Paar. Reihenfolge und
+    /// Trennzeichen stehen so auch im Server.
+    static func ableiten(gemeinsam: Data, eigenB64: String, serverB64: String) -> SymmetricKey {
+        HKDF<SHA256>.deriveKey(
+            inputKeyMaterial: SymmetricKey(data: gemeinsam),
+            salt: Data("\(eigenB64)|\(serverB64)".utf8),
+            info: Data(info.utf8),
+            outputByteCount: 32
+        )
     }
 
     /// Die laufende Nummer gegen Wiedereinspielen.

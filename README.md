@@ -101,11 +101,11 @@ sieht, dass eine gelöschte Bewegungsspur wirklich weg ist, dass keine Sammlung
 von außen offen steht.
 
 Die zweite Verschlüsselung steht in vier Sprachen. Damit sie nicht
-auseinanderlaufen, rechnen Go, Kotlin und JavaScript denselben Prüfvektor nach
-(`testdaten/lagefunk.json`); die Swift-Fassung prüft
-`ios/Funkprobe/pruefen.sh` gegen einen laufenden Server. Wer an der Ableitung
-dreht, bricht gleichzeitig drei Tests — statt am Spieltag einen leeren
-Bildschirm zu sehen.
+auseinanderlaufen, rechnen alle vier denselben Prüfvektor nach
+(`testdaten/lagefunk.json`): Go, Kotlin und JavaScript in ihren Tests, Swift
+in `ios/Funkprobe/pruefen.sh` — das zusätzlich gegen einen laufenden Server
+redet, wenn einer da ist. Wer an der Ableitung dreht, bricht gleichzeitig vier
+Prüfungen, statt am Spieltag einen leeren Bildschirm zu sehen.
 
 ## Aufbau
 
@@ -350,10 +350,9 @@ daneben — mit Einwilligungsvorlage zum Ausdrucken.
 das Android-SDK, baut Oberfläche, Server und App und lässt alle Tests laufen.
 Geprüft an einem frischen Klon mit leeren Werkzeugordnern.
 
-**Tests in drei Sprachen** — 106 Go-Tests, 21 Kotlin-Tests, 8 Web-Tests. Der
-wichtigste ist ein gemeinsamer Prüfvektor: Go, Kotlin und JavaScript rechnen
-dieselben Zahlen der Verschlüsselung nach, damit sie nicht wieder lautlos
-auseinanderlaufen.
+**Tests in vier Sprachen** — Go, Kotlin, JavaScript und Swift. Der wichtigste
+ist ein gemeinsamer Prüfvektor: Alle vier rechnen dieselben Zahlen der
+Verschlüsselung nach, damit sie nicht wieder lautlos auseinanderlaufen.
 
 Damit ist das Regelwerk v3.2 vollständig umgesetzt, das Spiel von Anfang bis Ende
 durchspielbar und der Server ohne Fachkenntnisse in Betrieb zu nehmen.

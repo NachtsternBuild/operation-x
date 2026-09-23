@@ -12,11 +12,11 @@ import org.junit.Test
 /**
  * Rechnet den gemeinsamen Prüfvektor nach.
  *
- * Dieselbe Datei prüfen auch der Server (internal/crypt/vektor_test.go) und
- * die Weboberfläche (web/src/lib/funk-kern.test.js). Ergibt eine der drei
- * Sprachen etwas anderes, reden Server und Gerät am Spieltag aneinander
- * vorbei — und zwar lautlos, weil eine misslungene Entschlüsselung aussieht
- * wie eine leere Antwort.
+ * Dieselbe Datei prüfen auch der Server (pkg/crypt/vektor_test.go), die
+ * Weboberfläche (web/src/lib/funk-kern.test.js) und die iOS-Fassung
+ * (ios/Funkprobe). Ergibt eine der vier Sprachen etwas anderes, reden Server
+ * und Gerät am Spieltag aneinander vorbei — und zwar lautlos, weil eine
+ * misslungene Entschlüsselung aussieht wie eine leere Antwort.
  */
 class FunkVektorTest {
 

@@ -12,13 +12,14 @@ Was hier liegt, ist trotzdem kein blinder Entwurf mehr:
 |---|---|
 | Alle 14 Dateien, Syntax | geprüft (`swiftc -parse`, Swift 6.4) |
 | `Models.swift`, `Session.swift` | vollständig typgeprüft |
-| `Funk.swift` — die Verschlüsselung | **gegen einen echten Server geprüft**, siehe unten |
+| `Funk.swift` — die Verschlüsselung | **doppelt geprüft**: gegen den gemeinsamen Prüfvektor und gegen einen echten Server |
 | SwiftUI, MapKit, CoreLocation | ungeprüft — dafür braucht es die Apple-SDK |
 
 Die Verschlüsselung war die gefährlichste Stelle, weil sie lautlos scheitert:
 Passt das Salz oder das Beiwerk nicht zeichengenau zum Server, kommen leere
 Seiten statt einer Fehlermeldung. Genau die ist jetzt nachgewiesen — mit der
-echten Datei, gegen den echten Server (`Funkprobe/`).
+echten Datei, gegen den echten Server, und gegen dieselben Zahlen, die auch
+Go, Kotlin und die Weboberfläche nachrechnen (`Funkprobe/`).
 
 Ungeprüft bleibt alles, was die Apple-SDK braucht. Rechnet dort mit
 Tippfehlern und mit Feinheiten von SwiftUI, die sich erst im Übersetzer
@@ -30,15 +31,24 @@ versionieren, nichts, was am Spieltag fehlt.
 ## Die Verschlüsselung ohne Mac prüfen
 
 ```bash
-cd ios/Funkprobe && ./pruefen.sh http://127.0.0.1:8090
+cd ios/Funkprobe && ./pruefen.sh                        # nur der Prüfvektor
+cd ios/Funkprobe && ./pruefen.sh http://127.0.0.1:8090  # dazu ein echter Server
 ```
 
-Braucht nur eine Swift-Toolchain (<https://swift.org/install>) und einen
-laufenden Spielserver. Der Prüfstand übersetzt die **echte**
-`OperationX/Data/Funk.swift` — keine Kopie — und redet damit verschlüsselt mit
-dem Server: Handschlag, Antwort öffnen, Anfrage mit Abfrageteil, mehrere
-Nummern hintereinander, zwei Clients nebeneinander, und dass ein fremder
-Schlüssel sauber scheitert statt Unsinn zu liefern.
+Braucht nur eine Swift-Toolchain (<https://swift.org/install>). Der Prüfstand
+übersetzt die **echte** `OperationX/Data/Funk.swift` — keine Kopie — und
+prüft zweierlei:
+
+**Den gemeinsamen Prüfvektor** (`testdaten/lagefunk.json`): feste Eingaben,
+feste Ausgaben. Dieselben Zahlen rechnen Go, Kotlin und die Weboberfläche
+nach. Läuft eine der vier Umsetzungen weg, brechen vier Prüfungen gleichzeitig
+— statt dass am Spieltag ein Bildschirm leer bleibt. Dafür braucht es keinen
+Server.
+
+**Den Handschlag mit einem laufenden Server**, wenn einer erreichbar ist:
+Antwort öffnen, Anfrage mit Abfrageteil, mehrere Nummern hintereinander, zwei
+Clients nebeneinander, und dass ein fremder Schlüssel sauber scheitert statt
+Unsinn zu liefern.
 
 Möglich macht das ein Ziel namens `CryptoKit`, das
 [swift-crypto](https://github.com/apple/swift-crypto) durchreicht — dieselbe
@@ -104,6 +114,9 @@ OperationX/
 Funkprobe/                Prüfstand für die Verschlüsselung, läuft auf Linux
 ```
 
+Der Prüfvektor, gegen den `Funkprobe` rechnet, liegt außerhalb dieses Ordners
+in `testdaten/lagefunk.json` — er gehört allen vier Umsetzungen gemeinsam.
+
 ## Drei Entscheidungen, die von Android abweichen
 
 **Die Karte kommt von MapKit, nicht von MapLibre.** Der Untergrund ist eine
@@ -123,7 +136,8 @@ App alle zehn Sekunden nach. Der Unterschied fällt genau an einer Stelle auf:
 Der Sichtkontakt-Alarm erreicht die Zielperson später. Das ist der nächste
 Schritt, wenn der Rest läuft — `URLSession.bytes(for:)` liest einen
 Ereignisstrom, und jede Sendung ist einzeln verschlüsselt (siehe
-`web/src/lib/funk.svelte.js`, Funktion `openStreamEvent`).
+`web/src/lib/funk.svelte.js`, Funktion `openStreamEvent`; der gemeinsame
+Rechenkern steht daneben in `funk-kern.js`).
 
 ## Was beim ersten Übersetzen zu erwarten ist
 

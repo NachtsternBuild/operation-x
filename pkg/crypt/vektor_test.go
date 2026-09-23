@@ -71,8 +71,8 @@ func TestVektorLagefunk(t *testing.T) {
 
 	neu := vektor{
 		Hinweis: "Prüfvektor für die zweite Verschlüsselung (Lagefunk). " +
-			"Dieselben Zahlen prüfen Go, Kotlin und JavaScript. " +
-			"Erzeugt von internal/crypt/vektor_test.go.",
+			"Dieselben Zahlen prüfen Go, Kotlin, JavaScript und Swift. " +
+			"Erzeugt von pkg/crypt/vektor_test.go.",
 		GeheimnisHex:    hex.EncodeToString(geheimnis),
 		ClientPublicB64: clientPub,
 		ServerPublicB64: serverPub,
